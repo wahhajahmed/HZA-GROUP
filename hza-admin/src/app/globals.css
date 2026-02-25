@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  @apply bg-gray-50 text-gray-900 antialiased;
+}
+
+/* Hide browser's native password reveal button (Edge/IE) */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}

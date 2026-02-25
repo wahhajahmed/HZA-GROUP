@@ -1,0 +1,10 @@
+.logoImg {
+  max-height: 65px;
+  height: 55px;
+  width: auto;
+  background: none;
+  display: block;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: pixelated;
+}

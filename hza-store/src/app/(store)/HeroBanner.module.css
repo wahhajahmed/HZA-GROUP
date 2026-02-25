@@ -1,0 +1,314 @@
+.blob1Parallax {
+  /* This class will be dynamically updated via style attribute for parallax, but base transform is here */
+  transform: translateY(-30px) scale(1.08);
+/* Removed stray closing brace */
+.delay1 {
+  transition-delay: 0.1s !important;
+}
+.delay2 {
+  transition-delay: 0.25s !important;
+}
+.delay3 {
+  transition-delay: 0.5s !important;
+}
+.delay4 {
+  transition-delay: 0.7s !important;
+}
+.blob2Parallax {
+  /* This class will be dynamically updated via style attribute for parallax, but base transform is here */
+  transform: translateY(0) scale(1);
+}
+/* Modern Hero Banner Styles */
+
+
+.hero {
+  position: relative;
+  overflow: visible;
+  min-height: 520px;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 5rem 0 5rem 0;
+  background: #1e2560; /* fallback for gradient */
+  z-index: 0;
+}
+
+.animatedBg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(120deg, #1e3a8a 0%, #6366f1 60%, #a21caf 100%);
+  animation: gradientShift 12s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    background-position: 100% 50%;
+    filter: hue-rotate(20deg);
+  }
+}
+
+.glow {
+  position: absolute;
+  top: 40%;
+  left: 20%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle at 50% 50%, #60a5fa55 0%, #a21caf22 60%, transparent 100%);
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+
+.blobRight {
+  position: absolute;
+  top: 10%;
+  right: 0;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle at 60% 40%, #a21cafcc 0%, #6366f1bb 60%, transparent 100%);
+  opacity: 0.55;
+  filter: blur(60px);
+  z-index: 3;
+  pointer-events: none;
+  animation: floatBlob 10s ease-in-out infinite alternate;
+}
+
+@keyframes floatBlob {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-30px) scale(1.08); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-30px) scale(1.08); }
+}
+
+
+/* Remove glassmorphism, use clean content container */
+.heroContent {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  max-width: 650px;
+  margin-left: 7vw;
+  margin-right: auto;
+  padding: 0 2rem;
+}
+
+
+.heading {
+  font-size: 2.8rem;
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
+}
+.headingVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.headingLine {
+  display: block;
+  font-size: 1em;
+  font-weight: inherit;
+  margin-bottom: 0.1em;
+}
+.fadeUp {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
+}
+
+  /* text-fill-color: transparent; removed for compatibility */
+.gradientText {
+  background: linear-gradient(90deg, #60a5fa 0%, #a21caf 100%);
+  background-size: 200% 200%;
+  background-position: 0% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientTextAnim 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes gradientTextAnim {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+.heroMinHeight {
+  min-height: 420px;
+}
+.blob1Transform {
+  /* default transform for blob1 */
+  transform: translateY(-30px) scale(1.08);
+}
+.blob2Transform {
+  /* default transform for blob2 */
+  transform: translateY(0) scale(1);
+}
+.typingPre {
+  white-space: pre;
+}
+}
+
+.typing {
+  min-height: 3.5rem;
+  white-space: pre;
+  border-right: 2px solid #fff;
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink {
+  0%, 100% { border-color: #fff; }
+  50% { border-color: transparent; }
+}
+
+
+.subheading {
+  color: #e0e7ff;
+  font-size: 1.25rem;
+  margin-bottom: 2.2rem;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
+}
+.fadeUp {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+
+.heroBtns {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  align-items: flex-start;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
+}
+.heroBtns.fadeUp {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (min-width: 640px) {
+  .heading { font-size: 3.5rem; }
+  .glass { padding: 3.5rem 3rem; }
+  .heroBtns { flex-direction: row; }
+}
+
+@media (max-width: 600px) {
+  .glass { padding: 1.5rem 0.5rem; }
+  .heading { font-size: 2rem; }
+}
+
+
+.btnPrimary {
+  background: linear-gradient(90deg, #2563eb 0%, #a21caf 100%);
+  color: #fff;
+  font-weight: 700;
+  border-radius: 9999px;
+  padding: 0.85rem 2.2rem;
+  font-size: 1.15rem;
+  box-shadow: 0 2px 16px 0 #6366f155;
+  transition: transform 0.18s cubic-bezier(.4,0,.2,1), box-shadow 0.18s cubic-bezier(.4,0,.2,1);
+  border: none;
+  outline: none;
+  cursor: pointer;
+  will-change: transform;
+}
+.btnPrimary:hover {
+  transform: translateY(-4px) scale(1.045);
+  box-shadow: 0 8px 32px 0 #a21caf55;
+}
+
+
+.btnSecondary {
+  border: 2px solid #fff;
+  color: #fff;
+  background: transparent;
+  font-weight: 700;
+  border-radius: 9999px;
+  padding: 0.85rem 2.2rem;
+  font-size: 1.15rem;
+  transition: background 0.18s cubic-bezier(.4,0,.2,1), color 0.18s cubic-bezier(.4,0,.2,1), box-shadow 0.18s cubic-bezier(.4,0,.2,1), transform 0.18s cubic-bezier(.4,0,.2,1);
+  outline: none;
+  cursor: pointer;
+  will-change: transform;
+  position: relative;
+  overflow: hidden;
+}
+.btnSecondary::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, #6366f1 0%, #a21caf 100%);
+  opacity: 0;
+  transition: opacity 0.18s cubic-bezier(.4,0,.2,1);
+  z-index: 0;
+}
+.btnSecondary:hover {
+  background: #fff;
+  color: #a21caf;
+  transform: translateY(-2px) scale(1.045);
+  box-shadow: 0 4px 24px 0 #a21caf33;
+}
+.btnSecondary:hover::before {
+  opacity: 0.08;
+}
+
+/* Parallax container for mouse movement */
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .hero {
+    min-height: 400px;
+  }
+  .heroContent {
+    margin-left: 2vw;
+    max-width: 98vw;
+    padding: 0 1rem;
+  }
+  .blobRight {
+    width: 260px;
+    height: 260px;
+    top: 18%;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero {
+    min-height: 260px;
+    padding: 2.5rem 0 2.5rem 0;
+  }
+  .heroContent {
+    margin-left: 0;
+    padding: 0 0.5rem;
+    max-width: 100vw;
+  }
+  .heading {
+    font-size: 1.7rem;
+  }
+  .blobRight {
+    width: 120px;
+    height: 120px;
+    top: 30%;
+  }
+}

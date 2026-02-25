@@ -1,0 +1,11 @@
+{
+  "name": "hza-group",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix hza-store",
+    "build": "npm run build --prefix hza-store",
+    "start": "npm run start --prefix hza-store",
+    "lint": "npm run lint --prefix hza-store"
+  }
+}
