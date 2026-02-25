@@ -1,4 +1,4 @@
 {
-    "buildCommand": "npm run build --prefix hza-admin && npm run build --prefix hza-store",
+    "buildCommand": "npm run build:admin",
     "outputDirectory": "hza-admin/.next"
 }
