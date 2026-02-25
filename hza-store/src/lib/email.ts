@@ -1,6 +1,12 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getResend = () => {
+  const key = process.env.RESEND_API_KEY;
+  if (!key || key === 'your_actual_resend_api_key_here') {
+    return null;
+  }
+  return new Resend(key);
+};
 
 const FROM_EMAIL = process.env.EMAIL_FROM ?? 'HZA Group <noreply@hzagroup.com>';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
@@ -67,6 +73,15 @@ export async function sendReviewRequestEmail({
 </html>`;
 
   try {
+    const resend = getResend();
+    if (!resend) {
+      // Log warning in dev/build, but keep it silent in prod if explicitly not configured
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[Email] Skipping review request: RESEND_API_KEY is not configured');
+      }
+      return;
+    }
+
     await resend.emails.send({
       from: FROM_EMAIL,
       to: toEmail,
