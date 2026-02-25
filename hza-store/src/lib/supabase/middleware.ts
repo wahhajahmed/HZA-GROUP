@@ -2,11 +2,11 @@ import { createServerClient } from '@supabase/ssr';
 import type { NextRequest, NextResponse } from 'next/server';
 
 // Bypass navigator.locks to prevent lock timeout errors in some environments
-const noopLock = async (
+const noopLock = async <R>(
   _name: string,
   _acquireTimeout: number,
-  fn: () => Promise<unknown>
-) => fn();
+  fn: () => Promise<R>
+): Promise<R> => fn();
 
 /**
  * Creates a Supabase client for use in Next.js middleware.

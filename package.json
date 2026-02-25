@@ -3,9 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npm run dev --prefix hza-store",
-    "build": "npm run build --prefix hza-store",
-    "start": "npm run start --prefix hza-store",
-    "lint": "npm run lint --prefix hza-store"
-  }
+    "dev:store": "npm run dev --prefix hza-store",
+    "build:store": "npm run build --prefix hza-store",
+    "dev:admin": "npm run dev --prefix hza-admin",
+    "build:admin": "npm run build --prefix hza-admin",
+    "build": "npm run build --prefix hza-admin",
+    "lint": "npm run lint --prefix hza-store && npm run lint --prefix hza-admin"
+  },
+  "workspaces": [
+    "hza-admin",
+    "hza-store"
+  ]
 }
