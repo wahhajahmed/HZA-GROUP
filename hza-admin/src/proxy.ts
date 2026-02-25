@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -37,7 +37,6 @@ export async function middleware(request: NextRequest) {
       .select('is_admin')
       .eq('id', user.id)
       .single();
-
     if (!profile?.is_admin) {
       await supabase.auth.signOut();
       return NextResponse.redirect(new URL('/login?error=not_admin', request.url));
