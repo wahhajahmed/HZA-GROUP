@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '5mb',
     },
   },
+  turbopack: {
+    root: '../',
+  },
 };
 
 export default nextConfig;
