@@ -2,28 +2,34 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import logoStyles from '@/components/shared/LogoImg.module.css';
 import { usePathname, useRouter } from 'next/navigation';
-import { ShoppingCart, Menu, X, User, LogOut, Package } from 'lucide-react';
-import { useState, useSyncExternalStore } from 'react';
+import { ShoppingCart, Menu, X, User, LogOut, Package, ChevronDown, ArrowUpRight } from 'lucide-react';
+import { useState, useSyncExternalStore, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/auth.store';
 import { useCartStore } from '@/store/cart.store';
 import { createClient } from '@/lib/supabase/client';
 import { NAV_LINKS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-// Removed HzaGroupLogo import
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, setUser } = useAuthStore();
-  // useSyncExternalStore ensures server snapshot = 0, preventing hydration mismatch
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const totalItems = useSyncExternalStore(
     useCartStore.subscribe,
     () => useCartStore.getState().totalItems(),
     () => 0
   );
+  
   const { setItems } = useCartStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -48,33 +54,39 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+    <header className={cn(
+      "fixed top-0 z-50 w-full transition-all duration-300 px-4 pt-4",
+      scrolled ? "pt-2" : "pt-4"
+    )}>
+      <div className={cn(
+        "container mx-auto flex h-16 max-w-7xl items-center justify-between px-6 rounded-2xl transition-all duration-300",
+        scrolled ? "glass shadow-xl h-14" : "bg-white border border-slate-100 shadow-premium"
+      )}>
         {/* Logo */}
-        <Link href="/" className="flex items-center" style={{ minHeight: 0 }}>
-          <Image
-            src="/images/hza-logo.jpeg"
-            alt="HZA Group Logo"
-            height={60}
-            width={180}
-            className={logoStyles.logoImg}
-            priority
-            style={{ maxHeight: 65, width: 'auto', objectFit: 'contain', background: 'none', display: 'block' }}
-            sizes="(max-width: 768px) 120px, (max-width: 1200px) 160px, 180px"
-          />
+        <Link href="/" className="flex items-center group transition-transform hover:scale-105">
+           <div className="relative h-10 w-28 md:w-32">
+             <Image
+                src="/images/hza-logo.jpeg"
+                alt="HZA Group"
+                fill
+                className="object-contain"
+                priority
+                sizes="120px"
+              />
+           </div>
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6">
+        {/* Center Desktop Nav */}
+        <nav className="hidden lg:flex items-center gap-1">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                'text-sm font-medium transition-colors hover:text-blue-600',
+                'px-4 py-2 rounded-lg text-xs font-black uppercase tracking-[0.15em] transition-all duration-300',
                 pathname === link.href
-                  ? 'text-blue-600'
-                  : 'text-gray-600'
+                  ? 'text-primary bg-indigo-50/50'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
               )}
             >
               {link.label}
@@ -83,155 +95,153 @@ export function Navbar() {
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
-          {/* Cart */}
+        <div className="flex items-center gap-3">
+          {/* Cart with Premium Badge */}
           <button
             onClick={handleCartClick}
-            className="relative p-2 text-gray-600 hover:text-blue-600 transition-colors"
+            className="group relative h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 hover:bg-primary hover:text-white transition-all duration-500"
           >
-            <ShoppingCart className="h-5 w-5" />
+            <ShoppingCart className="h-5 w-5 transition-transform group-hover:scale-110" />
             {totalItems > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-950 border-2 border-white text-[9px] font-black text-white shadow-lg">
                 {totalItems > 99 ? '99+' : totalItems}
               </span>
             )}
           </button>
 
-          {/* User menu — desktop */}
+          {/* User Section */}
+          <div className="h-6 w-[1px] bg-slate-100 hidden md:block mx-1" />
+
           {user ? (
             <div className="relative hidden md:block">
               <button
                 onClick={() => setUserMenuOpen((v) => !v)}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                className="flex items-center gap-2 group p-1 pr-2 rounded-xl transition-colors hover:bg-slate-50"
               >
-                <User className="h-4 w-4" />
-                <span className="max-w-[120px] truncate font-semibold">{user.full_name}</span>
+                <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center text-primary">
+                   <User className="h-4 w-4" />
+                </div>
+                <div className="flex flex-col items-start leading-none">
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HZA Member</span>
+                   <span className="text-sm font-black text-slate-900 truncate max-w-[100px]">{user.full_name.split(' ')[0]}</span>
+                </div>
+                <ChevronDown className={cn("h-4 w-4 text-slate-400 transition-transform", userMenuOpen && "rotate-180")} />
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-gray-200 bg-white p-1 shadow-lg z-50">
+                <div className="absolute right-0 top-[120%] w-56 rounded-2xl border border-slate-100 bg-white p-2 shadow-2xl animate-fade-in ring-1 ring-slate-950/5">
+                  <div className="px-3 py-3 border-b border-slate-50 mb-1">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Account Settings</p>
+                  </div>
                   <Link
                     href="/account"
                     onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors"
                   >
-                    <User className="h-4 w-4" />
-                    My Account
+                    <User className="h-4 w-4 text-slate-400" />
+                    My Profile
                   </Link>
                   <Link
                     href="/orders"
                     onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors"
                   >
-                    <Package className="h-4 w-4" />
-                    My Orders
+                    <Package className="h-4 w-4 text-slate-400" />
+                    Manage Orders
                   </Link>
-                  <hr className="my-1 border-gray-100" />
+                  <div className="my-1 h-[1px] bg-slate-50" />
                   <button
                     onClick={handleSignOut}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors"
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogOut className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     Logout
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            <div className="hidden md:flex items-center gap-2">
-              <button
-                onClick={() => router.push('/login')}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            <div className="hidden md:flex items-center gap-1">
+              <Link
+                href="/login"
+                className="px-4 py-2 text-xs font-black uppercase tracking-wider text-slate-600 hover:text-slate-900 transition-colors"
               >
-                Login
-              </button>
-              <button
-                onClick={() => router.push('/signup')}
-                className="rounded-lg px-3 py-2 text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                Sign In
+              </Link>
+              <Link
+                href="/signup"
+                className="btn-primary py-2 px-5 text-xs font-black tracking-widest leading-none"
               >
-                Sign Up
-              </button>
+                JOIN THE CLUB
+              </Link>
             </div>
           )}
 
-          {/* Mobile menu toggle */}
+          {/* Mobile Menu Toggle */}
           <button
-            className="p-2 text-gray-600 md:hidden"
+            className="p-2 text-slate-600 lg:hidden border-l border-slate-100 ml-1"
             onClick={() => setMenuOpen((v) => !v)}
           >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile Menu Overhaul */}
       {menuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white px-4 pb-4 animate-fade-in">
-          <nav className="flex flex-col gap-1 pt-3">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                className={cn(
-                  'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                  pathname === link.href
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <hr className="my-2 border-gray-100" />
-            {user ? (
-              <>
-                <div className="px-3 py-2 text-sm font-semibold text-blue-600 flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  {user.full_name}
+        <div className="lg:hidden absolute top-full left-0 right-0 px-4 pt-2 animate-fade-in">
+          <div className="glass rounded-3xl p-6 shadow-2xl">
+            <nav className="flex flex-col gap-2">
+              <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2 px-2">Navigation</p>
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
+                  className={cn(
+                    'flex items-center justify-between rounded-xl px-4 py-3 text-sm font-black tracking-tight transition-all',
+                    pathname === link.href
+                      ? 'bg-primary text-white shadow-lg shadow-indigo-200'
+                      : 'text-slate-700 hover:bg-slate-50'
+                  )}
+                >
+                  {link.label}
+                  <ArrowUpRight className="h-4 w-4 opacity-30" />
+                </Link>
+              ))}
+              
+              <div className="my-4 h-[1px] bg-slate-100/50" />
+              
+              {user ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 px-4 py-2">
+                    <div className="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center font-black">
+                       {user.full_name.charAt(0)}
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-tight">Member</span>
+                       <span className="font-black text-slate-900 tracking-tight">{user.full_name}</span>
+                    </div>
+                  </div>
+                  <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50">
+                    <User className="h-5 w-5 opacity-50" /> Account Settings
+                  </Link>
+                  <button onClick={handleSignOut} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50">
+                    <LogOut className="h-5 w-5 opacity-50" /> Logout
+                  </button>
                 </div>
-                <hr className="my-1 border-gray-100" />
-                <Link
-                  href="/account"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                >
-                  <User className="h-4 w-4" />
-                  My Account
-                </Link>
-                <Link
-                  href="/orders"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                >
-                  <Package className="h-4 w-4" />
-                  My Orders
-                </Link>
-                <button
-                  onClick={() => { setMenuOpen(false); handleSignOut(); }}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-red-600 hover:bg-red-50"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </button>
-              </>
-            ) : (
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => { setMenuOpen(false); router.push('/login'); }}
-                  className="flex-1 text-center rounded-lg px-3 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => { setMenuOpen(false); router.push('/signup'); }}
-                  className="flex-1 text-center rounded-lg px-3 py-2 text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                >
-                  Sign Up
-                </button>
-              </div>
-            )}
-          </nav>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <Link href="/login" onClick={() => setMenuOpen(false)} className="flex items-center justify-center rounded-xl bg-slate-100 px-4 py-3 text-sm font-black text-slate-900 tracking-tight">
+                    LOGIN
+                  </Link>
+                  <Link href="/signup" onClick={() => setMenuOpen(false)} className="flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-black text-white shadow-lg tracking-tight">
+                    JOIN CLUB
+                  </Link>
+                </div>
+              )}
+            </nav>
+          </div>
         </div>
       )}
     </header>
