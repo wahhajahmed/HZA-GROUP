@@ -1,6 +1,5 @@
 {
     "framework": "nextjs",
-    "buildCommand": "npm run build --workspace=hza-admin",
-    "outputDirectory": ".next",
-    "installCommand": "npm install"
+    "buildCommand": "cd hza-admin && next build",
+    "outputDirectory": "hza-admin/.next"
 }
