@@ -58,19 +58,19 @@ export async function placeOrder(
 
     const deliveryCharge = areaChargeData
       ? calculateDeliveryCharge(
-          cartItems.map((item) => ({
-            shipping_category: getEffectiveShippingCategory(
-              ((item.product as { shipping_category?: string } | null | undefined)?.shipping_category ?? 'small_parcel') as ShippingCategory,
-              ((item.product as { category?: { default_shipping_category?: string } } | null | undefined)?.category?.default_shipping_category ?? 'small_parcel') as ShippingCategory
-            ),
-            quantity: item.quantity,
-          })),
-          {
-            small_parcel_charge: areaChargeData.small_parcel_charge,
-            medium_parcel_charge: areaChargeData.medium_parcel_charge,
-            bulky_cargo_charge: areaChargeData.bulky_cargo_charge,
-          }
-        )
+        cartItems.map((item) => ({
+          shipping_category: getEffectiveShippingCategory(
+            ((item.product as { shipping_category?: string } | null | undefined)?.shipping_category ?? 'small_parcel') as ShippingCategory,
+            ((item.product as { category?: { default_shipping_category?: string } } | null | undefined)?.category?.default_shipping_category ?? 'small_parcel') as ShippingCategory
+          ),
+          quantity: item.quantity,
+        })),
+        {
+          small_parcel_charge: areaChargeData.small_parcel_charge,
+          medium_parcel_charge: areaChargeData.medium_parcel_charge,
+          bulky_cargo_charge: areaChargeData.bulky_cargo_charge,
+        }
+      )
       : 0;
 
     // Calculate subtotal
@@ -112,6 +112,7 @@ export async function placeOrder(
       total,
       tracking_number: null,
       payment_method: 'cash_on_delivery',
+      reviewed: false,
     });
 
     // Create order items
