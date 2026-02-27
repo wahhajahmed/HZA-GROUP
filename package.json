@@ -13,5 +13,8 @@
   "workspaces": [
     "hza-admin",
     "hza-store"
-  ]
+  ],
+  "devDependencies": {
+    "tailwindcss": "^4"
+  }
 }
