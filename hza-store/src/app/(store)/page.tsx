@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Truck, RotateCcw, Shield, Headphones, Quote, Star, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Truck, RotateCcw, Shield, Headphones, Star } from 'lucide-react';
 import { getFeaturedProducts } from '@/services/product.service';
 import { getCategories } from '@/services/category.service';
 import { getVisibleReviews } from '@/services/review.service';
@@ -12,7 +12,7 @@ import { ProductGridSkeleton } from '@/components/ui/skeleton';
 import { ReviewsSlider } from '@/components/shared/ReviewsSlider';
 import { Suspense } from 'react';
 
-import { HeroBanner } from './HeroBanner';
+
 import { SITE_NAME } from '@/lib/constants';
 import type { Review } from '@/types';
 
@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = 'force-dynamic';
+
 
 const FEATURES = [
   {
@@ -47,11 +48,67 @@ const FEATURES = [
   },
 ];
 
-async function FeaturedProducts() {
-  const { data: products } = await getFeaturedProducts();
-  return <ProductGrid products={products ?? []} />;
+// --- Hero Section ---
+function HeroSection() {
+  return (
+    <section className="relative bg-gradient-to-br from-indigo-50 via-white to-white py-24 mb-8">
+      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 md:px-12 flex flex-col md:flex-row items-center gap-16">
+        <div className="flex-1 text-center md:text-left mb-10 md:mb-0">
+          <h1 className="text-5xl md:text-6xl font-extrabold text-slate-900 mb-6 leading-tight">
+            Shop <span className="text-primary">Quality</span> Products
+          </h1>
+          <p className="text-lg text-slate-600 mb-8">
+            Discover thousands of products with fast delivery across Pakistan. Cash on delivery available.
+          </p>
+          <Link
+            href="/categories"
+            className="inline-block px-8 py-4 bg-primary text-white font-bold rounded-full shadow-lg hover:bg-primary-dark transition"
+          >
+            Shop Now
+          </Link>
+        </div>
+        <div className="flex-1 flex justify-center w-full">
+          <div className="w-full max-w-[420px] h-[220px] sm:h-[320px] bg-white rounded-3xl shadow-xl flex items-center justify-center p-4 sm:p-8 md:p-12">
+            <Image
+              src="/images/banner.png"
+              alt="Banner Image"
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 420px"
+              className="object-cover w-full h-full rounded-2xl"
+              priority
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }
 
+// --- Features Bar ---
+function FeaturesBar() {
+  return (
+    <section className="bg-white border-b border-slate-100">
+      <div className="container mx-auto max-w-7xl px-4 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {FEATURES.map((f) => (
+            <div key={f.title} className="flex items-center gap-4 group">
+              <div className="flex-shrink-0 h-14 w-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center transition-all group-hover:bg-primary group-hover:border-primary">
+                <f.icon className="h-6 w-6 text-slate-600 group-hover:text-white transition-colors" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-slate-900 uppercase tracking-wide">{f.title}</p>
+                <p className="text-xs text-slate-400 mt-1 font-medium">{f.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+// --- Category Section ---
 async function CategorySection() {
   const { data: allCategories } = await getCategories();
   const categories = getRootCategories(allCategories ?? []);
@@ -61,8 +118,8 @@ async function CategorySection() {
     <section className="container mx-auto max-w-7xl px-4 py-20">
       <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
         <div className="space-y-2">
-           <span className="text-primary font-bold text-xs uppercase tracking-[0.2em]">Curated Collections</span>
-           <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Shop by Category</h2>
+          <span className="text-primary font-bold text-xs uppercase tracking-[0.2em]">Curated Collections</span>
+          <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Shop by Category</h2>
         </div>
         <Link
           href="/categories"
@@ -71,12 +128,12 @@ async function CategorySection() {
           Explore All Collections <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </Link>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
         {categories.slice(0, 6).map((cat) => (
           <Link
             key={cat.id}
             href={`/categories/${cat.slug}`}
-            className="group premium-card flex flex-col items-center gap-4 bg-white p-6 text-center border-slate-100"
+            className="group flex flex-col items-center gap-4 bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition text-center border border-slate-100"
           >
             <div className="relative h-20 w-20 overflow-hidden rounded-2xl shadow-inner bg-slate-50 flex items-center justify-center">
               {cat.image_url ? (
@@ -101,11 +158,33 @@ async function CategorySection() {
   );
 }
 
-async function BottomSection() {
+// --- Featured Products Section ---
+async function FeaturedProductsSection() {
+  const { data: products } = await getFeaturedProducts();
+  return (
+    <section className="container mx-auto max-w-7xl px-4 py-20 bg-slate-50/30">
+      <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
+        <div className="space-y-2">
+          <span className="text-primary font-bold text-xs uppercase tracking-[0.2em]">Latest Arrivals</span>
+          <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Featured Products</h2>
+        </div>
+        <Link
+          href="/categories"
+          className="group flex items-center gap-2 text-sm font-bold text-slate-900 border-b-2 border-slate-900 pb-1 hover:text-primary hover:border-primary transition-all"
+        >
+          View New Releases <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+        </Link>
+      </div>
+      <ProductGrid products={products ?? []} />
+    </section>
+  );
+}
+
+
+// --- Testimonials & Call to Action ---
+async function TestimonialsSection() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
-  // Logged in → show reviews slider
   const { data: reviews } = await getVisibleReviews();
   const dbReviews = reviews ?? [];
 
@@ -137,38 +216,35 @@ async function BottomSection() {
                 Join our community of satisfied customers enjoying premium quality and exceptional Pakistani craftsmanship.
               </p>
             </div>
-            
             <div className="flex items-center gap-8 border-t border-slate-800 pt-8">
-               <div className="flex flex-col">
-                  <span className="text-2xl font-black text-white italic">4.9/5</span>
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Global Rating</span>
-               </div>
-               <div className="flex flex-col">
-                  <span className="text-2xl font-black text-white italic">50k+</span>
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Happy Clients</span>
-               </div>
+              <div className="flex flex-col">
+                <span className="text-2xl font-black text-white italic">4.9/5</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Global Rating</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-2xl font-black text-white italic">50k+</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Happy Clients</span>
+              </div>
             </div>
           </div>
-
           <div className="lg:col-span-3">
-             <div className="glass-dark p-8 rounded-3xl border-slate-800">
-                <ReviewsSlider reviews={allReviews} />
-             </div>
+            <div className="glass-dark p-8 rounded-3xl border-slate-800">
+              <ReviewsSlider reviews={allReviews} />
+            </div>
           </div>
         </div>
-
         {!user && (
           <div className="mt-20 premium-card bg-indigo-600 border-0 p-12 text-center rounded-[2.5rem] relative overflow-hidden group">
-             <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-             <div className="relative z-10 space-y-6">
-                <h3 className="text-3xl font-black text-white tracking-tight">Become an HZA Insider</h3>
-                <p className="text-indigo-100 max-w-md mx-auto">Create an account today and unlock exclusive access to pre-launches and member-only rewards.</p>
-                <div className="flex justify-center pt-4">
-                  <Link href="/signup" className="bg-white text-indigo-600 px-10 py-4 rounded-2xl font-black shadow-2xl shadow-indigo-900/40 hover:scale-105 transition-transform">
-                    JOIN THE CLUB
-                  </Link>
-                </div>
-             </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="relative z-10 space-y-6">
+              <h3 className="text-3xl font-black text-white tracking-tight">Become an HZA Insider</h3>
+              <p className="text-indigo-100 max-w-md mx-auto">Create an account today and unlock exclusive access to pre-launches and member-only rewards.</p>
+              <div className="flex justify-center pt-4">
+                <Link href="/signup" className="bg-white text-indigo-600 px-10 py-4 rounded-2xl font-black shadow-2xl shadow-indigo-900/40 hover:scale-105 transition-transform">
+                  JOIN THE CLUB
+                </Link>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -176,55 +252,20 @@ async function BottomSection() {
   );
 }
 
+
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <HeroBanner />
-
-      {/* Features Bar */}
-      <section className="bg-white border-b border-slate-100">
-        <div className="container mx-auto max-w-7xl px-4 py-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {FEATURES.map((f) => (
-              <div key={f.title} className="flex items-center gap-4 group">
-                <div className="flex-shrink-0 h-14 w-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center transition-all group-hover:bg-primary group-hover:border-primary">
-                  <f.icon className="h-6 w-6 text-slate-600 group-hover:text-white transition-colors" />
-                </div>
-                <div>
-                  <p className="text-sm font-black text-slate-900 uppercase tracking-wide">{f.title}</p>
-                  <p className="text-xs text-slate-400 mt-1 font-medium">{f.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+    <div className="flex flex-col min-h-screen bg-white">
+      <HeroSection />
+      <FeaturesBar />
       <Suspense fallback={null}>
         <CategorySection />
       </Suspense>
-
-      {/* Featured Products */}
-      <section className="container mx-auto max-w-7xl px-4 py-20 bg-slate-50/30">
-        <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
-            <div className="space-y-2">
-               <span className="text-primary font-bold text-xs uppercase tracking-[0.2em]">Latest Arrivals</span>
-               <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Featured Products</h2>
-            </div>
-            <Link
-              href="/categories"
-              className="group flex items-center gap-2 text-sm font-bold text-slate-900 border-b-2 border-slate-900 pb-1 hover:text-primary hover:border-primary transition-all"
-            >
-              View New Releases <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-        </div>
-        <Suspense fallback={<ProductGridSkeleton count={8} />}>
-          <FeaturedProducts />
-        </Suspense>
-      </section>
-
+      <Suspense fallback={<ProductGridSkeleton count={8} />}>
+        <FeaturedProductsSection />
+      </Suspense>
       <Suspense fallback={null}>
-        <BottomSection />
+        <TestimonialsSection />
       </Suspense>
     </div>
   );

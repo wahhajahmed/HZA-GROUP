@@ -33,6 +33,15 @@ export function Navbar() {
   const { setItems } = useCartStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  // Keyboard navigation for user menu
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setUserMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [userMenuOpen]);
 
   const handleCartClick = () => {
     if (!user) {
@@ -77,7 +86,7 @@ export function Navbar() {
         </Link>
 
         {/* Center Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -99,7 +108,8 @@ export function Navbar() {
           {/* Cart with Premium Badge */}
           <button
             onClick={handleCartClick}
-            className="group relative h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 hover:bg-primary hover:text-white transition-all duration-500"
+            aria-label="View cart"
+            className="group relative h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 hover:bg-primary hover:text-white transition-all duration-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <ShoppingCart className="h-5 w-5 transition-transform group-hover:scale-110" />
             {totalItems > 0 && (
@@ -116,7 +126,13 @@ export function Navbar() {
             <div className="relative hidden md:block">
               <button
                 onClick={() => setUserMenuOpen((v) => !v)}
-                className="flex items-center gap-2 group p-1 pr-2 rounded-xl transition-colors hover:bg-slate-50"
+                aria-haspopup="menu"
+                aria-expanded={userMenuOpen ? 'true' : 'false'}
+                aria-label="User menu"
+                className="flex items-center gap-2 group p-1 pr-2 rounded-xl transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') setUserMenuOpen(v => !v);
+                }}
               >
                 <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center text-primary">
                    <User className="h-4 w-4" />
@@ -129,7 +145,7 @@ export function Navbar() {
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 top-[120%] w-56 rounded-2xl border border-slate-100 bg-white p-2 shadow-2xl animate-fade-in ring-1 ring-slate-950/5">
+                <div className="absolute right-0 top-[120%] w-56 rounded-2xl border border-slate-100 bg-white p-2 shadow-2xl animate-fade-in ring-1 ring-slate-950/5" role="menu" aria-label="User menu">
                   <div className="px-3 py-3 border-b border-slate-50 mb-1">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Account Settings</p>
                   </div>
@@ -137,6 +153,7 @@ export function Navbar() {
                     href="/account"
                     onClick={() => setUserMenuOpen(false)}
                     className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                    role="menuitem"
                   >
                     <User className="h-4 w-4 text-slate-400" />
                     My Profile
@@ -145,6 +162,7 @@ export function Navbar() {
                     href="/orders"
                     onClick={() => setUserMenuOpen(false)}
                     className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                    role="menuitem"
                   >
                     <Package className="h-4 w-4 text-slate-400" />
                     Manage Orders
@@ -153,6 +171,7 @@ export function Navbar() {
                   <button
                     onClick={handleSignOut}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors"
+                    role="menuitem"
                   >
                     <LogOut className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     Logout
@@ -179,7 +198,9 @@ export function Navbar() {
 
           {/* Mobile Menu Toggle */}
           <button
-            className="p-2 text-slate-600 lg:hidden border-l border-slate-100 ml-1"
+            className="p-2 text-slate-600 lg:hidden border-l border-slate-100 ml-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="Toggle mobile menu"
+            aria-expanded={menuOpen ? 'true' : 'false'}
             onClick={() => setMenuOpen((v) => !v)}
           >
             {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -189,9 +210,9 @@ export function Navbar() {
 
       {/* Mobile Menu Overhaul */}
       {menuOpen && (
-        <div className="lg:hidden absolute top-full left-0 right-0 px-4 pt-2 animate-fade-in">
+        <div className="lg:hidden absolute top-full left-0 right-0 px-4 pt-2 animate-fade-in" role="dialog" aria-modal="true" aria-label="Mobile menu">
           <div className="glass rounded-3xl p-6 shadow-2xl">
-            <nav className="flex flex-col gap-2">
+            <nav className="flex flex-col gap-2" aria-label="Mobile navigation">
               <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2 px-2">Navigation</p>
               {NAV_LINKS.map((link) => (
                 <Link
@@ -199,19 +220,18 @@ export function Navbar() {
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
                   className={cn(
-                    'flex items-center justify-between rounded-xl px-4 py-3 text-sm font-black tracking-tight transition-all',
+                    'flex items-center justify-between rounded-xl px-4 py-3 text-sm font-black tracking-tight transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                     pathname === link.href
                       ? 'bg-primary text-white shadow-lg shadow-indigo-200'
                       : 'text-slate-700 hover:bg-slate-50'
                   )}
+                  tabIndex={0}
                 >
                   {link.label}
                   <ArrowUpRight className="h-4 w-4 opacity-30" />
                 </Link>
               ))}
-              
               <div className="my-4 h-[1px] bg-slate-100/50" />
-              
               {user ? (
                 <div className="space-y-2">
                   <div className="flex items-center gap-3 px-4 py-2">
@@ -223,19 +243,19 @@ export function Navbar() {
                        <span className="font-black text-slate-900 tracking-tight">{user.full_name}</span>
                     </div>
                   </div>
-                  <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50">
+                  <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                     <User className="h-5 w-5 opacity-50" /> Account Settings
                   </Link>
-                  <button onClick={handleSignOut} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50">
+                  <button onClick={handleSignOut} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
                     <LogOut className="h-5 w-5 opacity-50" /> Logout
                   </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
-                  <Link href="/login" onClick={() => setMenuOpen(false)} className="flex items-center justify-center rounded-xl bg-slate-100 px-4 py-3 text-sm font-black text-slate-900 tracking-tight">
+                  <Link href="/login" onClick={() => setMenuOpen(false)} className="flex items-center justify-center rounded-xl bg-slate-100 px-4 py-3 text-sm font-black text-slate-900 tracking-tight focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                     LOGIN
                   </Link>
-                  <Link href="/signup" onClick={() => setMenuOpen(false)} className="flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-black text-white shadow-lg tracking-tight">
+                  <Link href="/signup" onClick={() => setMenuOpen(false)} className="flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-black text-white shadow-lg tracking-tight focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                     JOIN CLUB
                   </Link>
                 </div>

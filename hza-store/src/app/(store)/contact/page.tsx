@@ -46,20 +46,25 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="container max-w-5xl mx-auto px-4 py-16">
-      <div className="text-center mb-12">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">Contact Us</h1>
-        <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-          Have a question or need help? We&apos;d love to hear from you.
-        </p>
-      </div>
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-white pb-16">
+      {/* Hero Section */}
+      <section className="w-full bg-white/80 border-b border-slate-100 py-16 mb-10">
+        <div className="container max-w-3xl mx-auto px-4 flex flex-col items-center text-center">
+          <div className="mb-6">
+            <Mail className="h-12 w-12 text-primary mx-auto mb-2" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-slate-900">Contact Us</h1>
+          <p className="text-lg text-slate-600 max-w-xl mx-auto">Have a question or need help? We&apos;d love to hear from you.</p>
+        </div>
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
-        {/* Contact Info */}
-        <div className="lg:col-span-2 space-y-6">
-          <h2 className="text-xl font-semibold">Get in Touch</h2>
+      <div className="container max-w-5xl mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+          {/* Contact Info */}
+          <div className="lg:col-span-2 space-y-6">
+            <h2 className="text-xl font-semibold">Get in Touch</h2>
           <div className="space-y-4">
-              {contactInfo.map((item) => (
+            {contactInfo.map((item) => (
               <div key={item.label} className="flex items-start gap-4 p-4 border rounded-xl">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <item.icon className="h-5 w-5 text-primary" />
@@ -76,6 +81,7 @@ export default function ContactPage() {
                 </div>
               </div>
             ))}
+          </div>
           </div>
 
           <div className="p-4 bg-primary/5 rounded-xl border border-primary/20">

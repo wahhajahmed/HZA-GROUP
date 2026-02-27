@@ -1,5 +1,9 @@
-import { SITE_NAME } from '@/lib/constants'
 import type { Metadata } from 'next'
+
+import { SITE_NAME } from '@/lib/constants'
+import { ShieldCheck, Truck, RotateCcw, CreditCard, Users } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'About Us',
@@ -8,11 +12,19 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="container max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-3xl md:text-4xl font-bold mb-4">About {SITE_NAME}</h1>
-      <p className="text-muted-foreground text-lg mb-10">Your trusted online shopping destination</p>
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-white pb-16">
+      {/* Hero Section */}
+      <section className="w-full bg-white/80 border-b border-slate-100 py-16 mb-10">
+        <div className="mx-auto w-full max-w-[1100px] px-4 sm:px-6 md:px-12 flex flex-col items-center text-center">
+          <div className="mb-6">
+            <Image src="/images/hza-logo.png" alt="HZA Group Logo" width={90} height={90} className="mx-auto mb-2" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-slate-900">About {SITE_NAME}</h1>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">Your trusted online shopping destination</p>
+        </div>
+      </section>
 
-      <div className="prose prose-gray max-w-none space-y-8">
+      <div className="mx-auto w-full max-w-[1100px] px-4 sm:px-6 md:px-12 space-y-16">
         <section>
           <h2 className="text-2xl font-semibold mb-3">Our Story</h2>
           <p className="text-muted-foreground leading-relaxed">
@@ -33,18 +45,36 @@ export default function AboutPage() {
 
         <section>
           <h2 className="text-2xl font-semibold mb-4">Why Choose Us?</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 not-prose">
-            {[
-              { title: 'Quality Guaranteed', desc: 'Every product is carefully selected and quality checked before listing.' },
-              { title: 'Fast Delivery', desc: 'We deliver across Pakistan with same-day dispatch on most orders.' },
-              { title: 'Easy Returns', desc: '7-day return policy for all items. No questions asked.' },
-              { title: 'Secure Payments', desc: 'Cash on delivery available with full order transparency.' },
-            ].map((item) => (
-              <div key={item.title} className="p-5 border rounded-xl bg-accent/30">
-                <h3 className="font-semibold mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 not-prose">
+            {/* Feature Cards with Icons */}
+            <div className="flex items-start gap-4 p-5 border rounded-xl bg-accent/30 min-h-[120px]">
+              <ShieldCheck className="h-7 w-7 text-primary flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold mb-1">Quality Guaranteed</h3>
+                <p className="text-sm text-muted-foreground">Every product is carefully selected and quality checked before listing.</p>
               </div>
-            ))}
+            </div>
+            <div className="flex items-start gap-4 p-5 border rounded-xl bg-accent/30 min-h-[120px]">
+              <Truck className="h-7 w-7 text-primary flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold mb-1">Fast Delivery</h3>
+                <p className="text-sm text-muted-foreground">We deliver across Pakistan with same-day dispatch on most orders.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4 p-5 border rounded-xl bg-accent/30 min-h-[120px]">
+              <RotateCcw className="h-7 w-7 text-primary flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold mb-1">Easy Returns</h3>
+                <p className="text-sm text-muted-foreground">7-day return policy for all items. No questions asked.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4 p-5 border rounded-xl bg-accent/30 min-h-[120px]">
+              <CreditCard className="h-7 w-7 text-primary flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold mb-1">Secure Payments</h3>
+                <p className="text-sm text-muted-foreground">Cash on delivery available with full order transparency.</p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -52,7 +82,7 @@ export default function AboutPage() {
           <h2 className="text-2xl font-semibold mb-3">Contact Us</h2>
           <p className="text-muted-foreground">
             Have questions? Visit our{' '}
-            <a href="/contact" className="text-primary underline">Contact page</a>{' '}
+            <Link href="/contact" className="text-primary underline">Contact page</Link>{' '}
             or email us at{' '}
             <a href="mailto:hzagroups1@gmail.com" className="text-primary underline">
               hzagroups1@gmail.com
@@ -60,7 +90,14 @@ export default function AboutPage() {
             . We&apos;re here to help!
           </p>
         </section>
+
+        {/* Call to Action */}
+        <section className="text-center pt-8">
+          <Link href="/categories" className="inline-block px-8 py-4 bg-primary text-white font-bold rounded-full shadow-lg hover:bg-primary-dark transition">
+            Shop Now
+          </Link>
+        </section>
       </div>
     </div>
-  )
+  );
 }
