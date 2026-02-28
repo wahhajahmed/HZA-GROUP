@@ -159,6 +159,10 @@ async function TestimonialsSection() {
     { id: 'f1', reviewer_name: 'Ahmed Raza', comment: 'Amazing quality! The clothes fit perfectly and the delivery was super fast.', rating: 5 },
     { id: 'f2', reviewer_name: 'Fatima Khan', comment: 'Excellent service and beautiful products. Exactly like the pictures.', rating: 5 },
     { id: 'f3', reviewer_name: 'Usman Ali', comment: 'Very good experience. Prices are reasonable and quality is top-notch.', rating: 4 },
+    { id: 'f4', reviewer_name: 'Ayesha Malik', comment: 'I am really impressed with the packaging and product quality. Highly recommended!', rating: 5 },
+{ id: 'f5', reviewer_name: 'Bilal Hussain', comment: 'Delivery was on time and customer support was very helpful. Great experience overall.', rating: 4 },
+{ id: 'f6', reviewer_name: 'Sana Ahmed', comment: 'The fabric quality is excellent and exactly as shown in the pictures. Will shop again.', rating: 5 },
+{ id: 'f7', reviewer_name: 'Hassan Tariq', comment: 'Good value for money. The product quality exceeded my expectations.', rating: 4 },
   ] as Review[];
 
   const allReviews = dbReviews.length > 0 ? dbReviews : fallbackReviews;
@@ -185,11 +189,11 @@ async function TestimonialsSection() {
             </div>
             <div className="flex items-center gap-8 border-t border-slate-800 pt-8">
               <div className="flex flex-col">
-                <span className="text-2xl font-black text-white italic">4.9/5</span>
+                <span className="text-2xl font-black text-white italic">4.9/7</span>
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Global Rating</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-2xl font-black text-white italic">50k+</span>
+                <span className="text-2xl font-black text-white italic">10k+</span>
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Happy Clients</span>
               </div>
             </div>
