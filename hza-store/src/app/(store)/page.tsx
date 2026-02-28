@@ -12,9 +12,9 @@ import { ProductGridSkeleton } from '@/components/ui/skeleton';
 import { ReviewsSlider } from '@/components/shared/ReviewsSlider';
 import { Suspense } from 'react';
 
-
 import { SITE_NAME } from '@/lib/constants';
 import type { Review } from '@/types';
+import { HeroBanner } from './HeroBanner';
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} — Premium Fashion & Quality Products`,
@@ -48,41 +48,6 @@ const FEATURES = [
   },
 ];
 
-// --- Hero Section ---
-function HeroSection() {
-  return (
-    <section className="relative bg-gradient-to-br from-indigo-50 via-white to-white py-24 mb-8">
-      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 md:px-12 flex flex-col md:flex-row items-center gap-16">
-        <div className="flex-1 text-center md:text-left mb-10 md:mb-0">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-slate-900 mb-6 leading-tight">
-            Shop <span className="text-primary">Quality</span> Products
-          </h1>
-          <p className="text-lg text-slate-600 mb-8">
-            Discover thousands of products with fast delivery across Pakistan. Cash on delivery available.
-          </p>
-          <Link
-            href="/categories"
-            className="inline-block px-8 py-4 bg-primary text-white font-bold rounded-full shadow-lg hover:bg-primary-dark transition"
-          >
-            Shop Now
-          </Link>
-        </div>
-        <div className="flex-1 flex justify-center w-full">
-          <div className="w-full max-w-[420px] h-[220px] sm:h-[320px] bg-white rounded-3xl shadow-xl flex items-center justify-center p-4 sm:p-8 md:p-12">
-            <Image
-              src="/images/banner.png"
-              alt="Banner Image"
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 420px"
-              className="object-cover w-full h-full rounded-2xl"
-              priority
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 // --- Features Bar ---
 function FeaturesBar() {
@@ -256,7 +221,7 @@ async function TestimonialsSection() {
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <HeroSection />
+      <HeroBanner />
       <FeaturesBar />
       <Suspense fallback={null}>
         <CategorySection />
