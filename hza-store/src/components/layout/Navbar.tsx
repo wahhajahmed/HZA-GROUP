@@ -191,7 +191,7 @@ export function Navbar() {
                 href="/signup"
                 className="btn-primary py-2 px-5 text-xs font-black tracking-widest leading-none"
               >
-                JOIN THE CLUB
+                Sign Up
               </Link>
             </div>
           )}

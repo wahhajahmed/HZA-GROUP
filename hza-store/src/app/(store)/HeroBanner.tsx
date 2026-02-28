@@ -53,11 +53,11 @@ export function HeroBanner() {
           <div className={styles.heroImageWrapper}>
             <Image
               src={heroImg}
-              alt="Quality E-commerce Products"
-              placeholder="blur"
+              alt="HZA Group Product Collection"
               priority
-              className="object-cover"
+              className="object-contain"
               sizes="(max-width: 1024px) 100vw, 580px"
+              fill
             />
           </div>
         </div>

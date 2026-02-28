@@ -206,7 +206,7 @@ async function TestimonialsSection() {
               <p className="text-indigo-100 max-w-md mx-auto">Create an account today and unlock exclusive access to pre-launches and member-only rewards.</p>
               <div className="flex justify-center pt-4">
                 <Link href="/signup" className="bg-white text-indigo-600 px-10 py-4 rounded-2xl font-black shadow-2xl shadow-indigo-900/40 hover:scale-105 transition-transform">
-                  JOIN THE CLUB
+                  Create Account
                 </Link>
               </div>
             </div>
