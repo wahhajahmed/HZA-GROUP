@@ -20,7 +20,7 @@ export async function signUp(
           full_name: input.full_name,
           phone: input.phone,
         },
-        emailRedirectTo: `${SITE_URL}/auth/callback?next=/login?verified=true`,
+        emailRedirectTo: `${SITE_URL}/auth/callback?next=${encodeURIComponent('/login?verified=true')}`,
       },
     });
 
