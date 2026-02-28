@@ -57,8 +57,13 @@ function LoginForm() {
       }
 
       toast.success('Welcome back!');
-      router.push(next);
+      
+      // Force refresh to update server-side session state
       router.refresh();
+      
+      // Redirect to next or default to account
+      const redirectUrl = next === '/' ? '/account' : next;
+      router.push(redirectUrl);
     } catch (err) {
       toast.error((err as Error).message ?? 'Something went wrong. Please try again.');
     }

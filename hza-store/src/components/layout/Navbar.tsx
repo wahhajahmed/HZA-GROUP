@@ -256,7 +256,7 @@ export function Navbar() {
                     LOGIN
                   </Link>
                   <Link href="/signup" onClick={() => setMenuOpen(false)} className="flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-black text-white shadow-lg tracking-tight focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                    JOIN CLUB
+                    Sign Up
                   </Link>
                 </div>
               )}

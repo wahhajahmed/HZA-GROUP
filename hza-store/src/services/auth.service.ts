@@ -77,7 +77,7 @@ export async function forgotPassword(email: string): Promise<ApiResponse<null>> 
     const supabase = await createClient();
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${SITE_URL}/auth/callback?next=/reset-password`,
+      redirectTo: `${SITE_URL}/reset-password`,
     });
 
     if (error) return { data: null, error: error.message };
