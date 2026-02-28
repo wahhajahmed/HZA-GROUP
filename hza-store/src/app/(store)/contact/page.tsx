@@ -46,9 +46,9 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-white to-white pb-16">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-white pb-16 pt-24 md:pt-28">
       {/* Hero Section */}
-      <section className="w-full bg-white/80 border-b border-slate-100 py-16 mb-10">
+      <section className="w-full bg-white/80 border-b border-slate-100 py-12 md:py-16 mb-10">
         <div className="container max-w-3xl mx-auto px-4 flex flex-col items-center text-center">
           <div className="mb-6">
             <Mail className="h-12 w-12 text-primary mx-auto mb-2" />

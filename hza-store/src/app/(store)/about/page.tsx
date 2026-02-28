@@ -12,15 +12,22 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-white to-white pb-16">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-white pb-16 pt-24 md:pt-28">
       {/* Hero Section */}
-      <section className="w-full bg-white/80 border-b border-slate-100 py-16 mb-10">
+      <section className="w-full bg-white/80 border-b border-slate-100 py-12 md:py-16 mb-10">
         <div className="mx-auto w-full max-w-[1100px] px-4 sm:px-6 md:px-12 flex flex-col items-center text-center">
           <div className="mb-6">
-            <Image src="/images/hza-logo.png" alt="HZA Group Logo" width={90} height={90} className="mx-auto mb-2" />
+            <div className="relative w-[100px] md:w-[150px] aspect-square mx-auto mb-4">
+              <Image 
+                src="/images/hza-logo.jpeg" 
+                alt="HZA Group Logo" 
+                fill 
+                className="object-contain" 
+              />
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-slate-900">About {SITE_NAME}</h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">Your trusted online shopping destination</p>
+          <h1 className="text-3xl md:text-5xl font-extrabold mb-4 text-slate-900 tracking-tight">About {SITE_NAME}</h1>
+          <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">Your trusted online shopping destination</p>
         </div>
       </section>
 

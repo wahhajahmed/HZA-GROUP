@@ -80,25 +80,27 @@ async function CategorySection() {
   if (!categories || categories.length === 0) return null;
 
   return (
-    <section className="container mx-auto max-w-7xl px-4 py-20">
-      <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
+    <section className="container mx-auto max-w-7xl px-4 py-16 md:py-20">
+      <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-8 md:mb-12 gap-6">
         <div className="space-y-2">
-          <span className="text-primary font-bold text-xs uppercase tracking-[0.2em]">Curated Collections</span>
-          <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Shop by Category</h2>
+          <span className="text-primary font-bold text-[10px] md:text-xs uppercase tracking-[0.2em]">Curated Collections</span>
+          <h2 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tight">Shop by Category</h2>
         </div>
         <Link
           href="/categories"
-          className="group flex items-center gap-2 text-sm font-bold text-slate-900 border-b-2 border-slate-900 pb-1 hover:text-primary hover:border-primary transition-all"
+          className="group flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 border-b-2 border-slate-900 pb-1 hover:text-primary hover:border-primary transition-all self-start md:self-auto"
         >
           Explore All Collections <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </Link>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
+      
+      {/* Categories Grid/Slider */}
+      <div className="flex md:grid md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8 overflow-x-auto md:overflow-visible pb-4 md:pb-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth">
         {categories.slice(0, 6).map((cat) => (
           <Link
             key={cat.id}
             href={`/categories/${cat.slug}`}
-            className="group flex flex-col items-center gap-4 bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition text-center border border-slate-100"
+            className="flex-shrink-0 min-w-[70%] md:min-w-0 md:w-auto snap-start group flex flex-col items-center gap-4 bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition text-center border border-slate-100"
           >
             <div className="relative h-20 w-20 overflow-hidden rounded-2xl shadow-inner bg-slate-50 flex items-center justify-center">
               {cat.image_url ? (
@@ -127,15 +129,15 @@ async function CategorySection() {
 async function FeaturedProductsSection() {
   const { data: products } = await getFeaturedProducts();
   return (
-    <section className="container mx-auto max-w-7xl px-4 py-20 bg-slate-50/30">
-      <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
+    <section className="container mx-auto max-w-7xl px-4 py-16 md:py-20 bg-slate-50/30">
+      <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-8 md:mb-12 gap-6">
         <div className="space-y-2">
-          <span className="text-primary font-bold text-xs uppercase tracking-[0.2em]">Latest Arrivals</span>
-          <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Featured Products</h2>
+          <span className="text-primary font-bold text-[10px] md:text-xs uppercase tracking-[0.2em]">Latest Arrivals</span>
+          <h2 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tight">Featured Products</h2>
         </div>
         <Link
           href="/categories"
-          className="group flex items-center gap-2 text-sm font-bold text-slate-900 border-b-2 border-slate-900 pb-1 hover:text-primary hover:border-primary transition-all"
+          className="group flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 border-b-2 border-slate-900 pb-1 hover:text-primary hover:border-primary transition-all self-start md:self-auto"
         >
           View New Releases <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
         </Link>
