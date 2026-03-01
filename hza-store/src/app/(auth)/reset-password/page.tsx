@@ -35,17 +35,32 @@ function ResetPasswordForm() {
         await new Promise(resolve => setTimeout(resolve, 500));
         
         const code = searchParams.get('code');
-        const tokenHash = searchParams.get('token'); 
+        const tokenHash = searchParams.get('token') || searchParams.get('token_hash');
+        let accessToken = searchParams.get('access_token');
+        let refreshToken: string | null = null;
 
-        if (!code && !tokenHash) {
-          // Check if user is already signed in (transition from callback)
-          const supabase = createClient();
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            setIsValidating(false);
-            return;
+        // Supabase sometimes returns tokens in the URL fragment (hash) like
+        // `#access_token=...&refresh_token=...`. Server routes don't receive
+        // fragments, so read from window.location.hash when present.
+        if (typeof window !== 'undefined' && window.location.hash) {
+          const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'));
+          accessToken = hashParams.get('access_token') || accessToken;
+          refreshToken = hashParams.get('refresh_token');
+        }
+
+        if (!code && !tokenHash && !accessToken) {
+          // No token in URL — ask server if a session exists (callback already exchanged code)
+          try {
+            const res = await fetch('/api/auth/session');
+            const json = await res.json();
+            if (json?.ok) {
+              setIsValidating(false);
+              return;
+            }
+          } catch (e) {
+            // ignore
           }
-          
+
           setError('Invalid or missing reset token. Please request a new link.');
           setIsValidating(false);
           return;
@@ -68,6 +83,17 @@ function ResetPasswordForm() {
             type: 'recovery',
           });
           if (verifyError) {
+            setError('The reset link is invalid or has expired.');
+            setIsValidating(false);
+            return;
+          }
+        } else if (accessToken) {
+          // If access_token is present, try to set session via URL (browser flow)
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || undefined,
+          } as any);
+          if (sessionError) {
             setError('The reset link is invalid or has expired.');
             setIsValidating(false);
             return;

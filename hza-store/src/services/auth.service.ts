@@ -6,6 +6,8 @@ import type { ApiResponse, Profile } from '@/types';
 import type { SignupSchema, LoginSchema } from '@/lib/validations/auth';
 import { SITE_URL } from '@/lib/constants';
 
+const BASE_SITE = SITE_URL.replace(/\/$/, '');
+
 export async function signUp(
   input: SignupSchema
 ): Promise<ApiResponse<null>> {
@@ -20,7 +22,7 @@ export async function signUp(
           full_name: input.full_name,
           phone: input.phone,
         },
-        emailRedirectTo: `${SITE_URL}/auth/callback?next=${encodeURIComponent('/login?verified=true')}`,
+        emailRedirectTo: `${BASE_SITE}/auth/callback?next=${encodeURIComponent('/login?verified=true')}`,
       },
     });
 
@@ -77,7 +79,9 @@ export async function forgotPassword(email: string): Promise<ApiResponse<null>> 
     const supabase = await createClient();
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${SITE_URL}/reset-password`,
+      // Redirect through the server callback so the server can exchange the
+      // code/token and set HTTP-only cookies before sending user to UI.
+      redirectTo: `${BASE_SITE}/auth/callback?next=/reset-password`,
     });
 
     if (error) return { data: null, error: error.message };
