@@ -115,7 +115,7 @@ export interface Order {
   total: number;
   tracking_number: string | null;
   payment_method: string;
-  reviewed: boolean;
+  reviewed?: boolean;
   created_at: string;
   updated_at: string;
   // Joined
@@ -240,9 +240,9 @@ export type ToastType = 'success' | 'error' | 'warning' | 'info';
 // PROMOTIONS
 // =============================================
 
-export type DisplayMode    = 'popup' | 'slide';
-export type AudienceType   = 'all' | 'logged_in' | 'guest';
-export type ShowFrequency  = 'session' | 'daily' | 'always';
+export type DisplayMode = 'popup' | 'slide';
+export type AudienceType = 'all' | 'logged_in' | 'guest';
+export type ShowFrequency = 'session' | 'daily' | 'always';
 
 export interface Promotion {
   id: string;

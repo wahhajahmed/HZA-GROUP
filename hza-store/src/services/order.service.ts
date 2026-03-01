@@ -112,8 +112,9 @@ export async function placeOrder(
       total,
       tracking_number: null,
       payment_method: 'cash_on_delivery',
-      reviewed: false,
     });
+
+    console.log('[PlaceOrder] Success:', newOrder);
 
     // Create order items
     const orderItems = cartItems.map((item) => ({
