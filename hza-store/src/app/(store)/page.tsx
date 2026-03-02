@@ -224,10 +224,20 @@ async function TestimonialsSection() {
 }
 
 
-export default function HomePage() {
+export default async function HomePage() {
+  /* Pre-fetch featured products for the hero slider */
+  const { data: heroProducts } = await getFeaturedProducts();
+  const sliderProducts = (heroProducts ?? []).slice(0, 6).map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    price: p.price,
+    discount_price: p.discount_price,
+    images: p.images,
+  }));
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <HeroBanner />
+      <HeroBanner featuredProducts={sliderProducts} />
       <FeaturesBar />
       <Suspense fallback={null}>
         <CategorySection />

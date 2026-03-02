@@ -1,13 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+// import Image from "next/image"; // KEPT: for static image revert
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import styles from "./HeroBanner.module.css";
-import heroImg from "@/components/layout/image/e-commerce.png";
+// import heroImg from "@/components/layout/image/e-commerce.png"; // KEPT: for static image revert
+import { HeroProductSlider, type SliderProduct } from "@/components/shared/HeroProductSlider";
 
-export function HeroBanner() {
+interface HeroBannerProps {
+  /** Featured products to show in the hero slider */
+  featuredProducts?: SliderProduct[];
+}
+
+export function HeroBanner({ featuredProducts = [] }: HeroBannerProps) {
   const [animate, setAnimate] = useState(false);
   const [showBtns, setShowBtns] = useState(false);
   const bannerRef = useRef<HTMLDivElement>(null);
@@ -48,8 +54,16 @@ export function HeroBanner() {
           </div>
         </div>
 
-        {/* Right Image Box */}
+        {/* Right Side — Featured Products Slider */}
         <div className={styles.imageBox + " " + (animate ? styles.fadeUp : "") + " " + styles.delay2}>
+          {featuredProducts.length > 0 ? (
+            <HeroProductSlider products={featuredProducts} interval={3500} />
+          ) : (
+            /* Fallback: empty placeholder so layout stays balanced */
+            <div className={styles.heroImageWrapper} />
+          )}
+
+          {/* ─── ORIGINAL STATIC IMAGE — uncomment to revert ───
           <div className={styles.heroImageWrapper}>
             <Image
               src={heroImg}
@@ -60,6 +74,7 @@ export function HeroBanner() {
               fill
             />
           </div>
+          ─── END ORIGINAL STATIC IMAGE ─── */}
         </div>
       </div>
     </section>
