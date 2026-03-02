@@ -1,8 +1,0 @@
-{
-  "framework": "nextjs",
-  "buildCommand": "npm run build -w hza-store",
-  "outputDirectory": ".next",
-  "github": {
-    "silent": true
-  }
-}
