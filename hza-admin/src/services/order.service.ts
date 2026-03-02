@@ -30,7 +30,7 @@ export async function updateOrderStatus(id: string, status: string) {
       const supabase = await createClient();
       const { data: order } = await supabase
         .from('orders')
-        .select('customer_email, customer_name, order_number')
+        .select('customer_email, customer_name, order_number, reviewed')
         .eq('id', id)
         .single();
 

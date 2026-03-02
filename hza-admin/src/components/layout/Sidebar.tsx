@@ -87,62 +87,83 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { label: 'Promotions', href: '/dashboard/promotions', icon: Megaphone, count: 0 },
   ];
 
-  const sidebarContent = (
-    <aside className="flex h-full w-64 flex-col bg-gray-900 text-white">
-      {/* Logo */}
-      <div className="flex h-16 items-center gap-3 px-5 border-b border-gray-800">
-        <div className="flex items-center w-full">
-          <BrandLogo asLink={true} href="/dashboard" variant="dark" size="md" />
-          {onClose && (
-            <button onClick={onClose} aria-label="Close sidebar" className="ml-auto text-gray-400 hover:text-white lg:hidden">
-              <X className="h-5 w-5" />
-            </button>
-          )}
-        </div>
-      </div>
+  return (
+    <>
+      {/* Backdrop (Mobile only) */}
+      <div
+        className={cn(
+          'fixed inset-0 z-40 bg-black/50 transition-opacity lg:hidden',
+          isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        )}
+        onClick={onClose}
+      />
 
-      {/* Nav */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {navItems.map(({ label, href, icon: Icon, count }) => {
-          const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
-                active ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-              )}
+      {/* Sidebar */}
+      <div
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 transition-transform duration-300 lg:relative lg:translate-x-0 shrink-0',
+          isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+        )}
+      >
+        <aside className="flex h-full w-64 flex-col bg-slate-900 border-r border-slate-800">
+          {/* Logo */}
+          <div className="flex h-16 items-center gap-3 px-5 border-b border-slate-800 bg-slate-950/20">
+            <div className="flex items-center w-full">
+              <BrandLogo asLink={true} href="/dashboard" variant="dark" size="md" />
+              <button
+                onClick={onClose}
+                aria-label="Close sidebar"
+                className="ml-auto text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 lg:hidden"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Nav */}
+          <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-6 custom-scrollbar">
+            {navItems.map(({ label, href, icon: Icon, count }) => {
+              const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 group relative',
+                    active 
+                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' 
+                      : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
+                  )}
+                >
+                  <Icon className={cn("h-4 w-4 shrink-0 transition-transform group-hover:scale-110", active ? "text-white" : "text-slate-500")} />
+                  <span className="flex-1">{label}</span>
+                  <BadgeCount count={count} />
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Footer */}
+          <div className="mt-auto border-t border-slate-800 p-4 space-y-2 bg-slate-950/20">
+            <a
+              href={process.env.NEXT_PUBLIC_STORE_URL ?? 'http://localhost:3000'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-all ring-1 ring-slate-800"
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span className="flex-1">{label}</span>
-              <BadgeCount count={count} />
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Footer */}
-      <div className="border-t border-gray-800 p-3 space-y-1">
-        <a
-          href={process.env.NEXT_PUBLIC_STORE_URL ?? 'http://localhost:3000'}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-        >
-          <Store className="h-4 w-4" />
-          View Store
-        </a>
-        <button
-          onClick={handleSignOut}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-400 hover:bg-red-900/40 hover:text-red-400 transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </button>
+              <Store className="h-4 w-4" />
+              View Store
+            </a>
+            <button
+              onClick={handleSignOut}
+              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all border border-transparent hover:border-red-500/20"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </button>
+          </div>
+        </aside>
       </div>
-    </aside>
+    </>
   );
-
-  return sidebarContent;
 }

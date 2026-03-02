@@ -1,16 +1,37 @@
 @import "tailwindcss";
 
-:root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+@layer components {
+  .premium-card {
+    @apply bg-white rounded-2xl border border-slate-200/60 shadow-sm transition-all duration-300;
+  }
+  
+  .premium-card:hover {
+    @apply shadow-lg shadow-indigo-500/5 border-indigo-100;
+  }
+
+  .reveal-text {
+    @apply bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent;
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-700/50 rounded-full hover:bg-slate-600;
+  }
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
 }
 
 * {
   box-sizing: border-box;
-}
-
-body {
-  @apply bg-gray-50 text-gray-900 antialiased;
 }
 
 /* Hide browser's native password reveal button (Edge/IE) */
