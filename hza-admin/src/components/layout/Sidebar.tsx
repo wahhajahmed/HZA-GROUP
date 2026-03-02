@@ -10,6 +10,7 @@ import {
   Users, Truck, MessageSquare, Star, Megaphone, LogOut, Store, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { STORE_URL } from '@/lib/constants';
 import { BrandLogo } from '@/components/shared/BrandLogo';
 
 function BadgeCount({ count }: { count: number }) {
@@ -146,7 +147,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/* Footer */}
           <div className="mt-auto border-t border-slate-800 p-4 space-y-2 bg-slate-950/20">
             <a
-              href={process.env.NEXT_PUBLIC_STORE_URL ?? 'http://localhost:3000'}
+              href={STORE_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-all ring-1 ring-slate-800"
