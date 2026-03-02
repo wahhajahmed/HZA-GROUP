@@ -7,7 +7,7 @@
     "build:store": "npm run build -w hza-store",
     "dev:admin": "npm run dev -w hza-admin",
     "build:admin": "npm run build -w hza-admin",
-    "build": "npm run build -w hza-admin",
+    "build": "npm run build -w hza-store",
     "lint": "npm run lint -w hza-store -w hza-admin"
   },
   "workspaces": [
