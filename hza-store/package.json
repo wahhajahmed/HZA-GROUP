@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm install --no-save --force lightningcss-linux-x64-gnu@1.31.1 && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "type-check": "tsc --noEmit"
@@ -35,5 +35,9 @@
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  }
+  ,
+  "optionalDependencies": {
+    "lightningcss-linux-x64-gnu": "1.31.1"
   }
 }
