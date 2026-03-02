@@ -1,4 +1,5 @@
 {
+  "buildCommand": "cd .. && npm run build -w hza-store",
   "installCommand": "cd .. && npm install",
-  "buildCommand": "cd .. && npm run build -w hza-store"
+  "framework": "nextjs"
 }
