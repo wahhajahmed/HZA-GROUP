@@ -1,5 +1,5 @@
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME ?? 'HZA Store';
-export const STORE_URL = process.env.NEXT_PUBLIC_STORE_URL ?? 'http://localhost:3000';
+export const STORE_URL = process.env.NEXT_PUBLIC_STORE_URL ?? 'https://www.hza-group.com/';
 
 export const SUPABASE_BUCKETS = {
   PRODUCTS: 'products',
