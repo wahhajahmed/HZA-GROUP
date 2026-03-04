@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { updateProduct } from '@/services/product.service';
+import { updateProduct, removeProductImage } from '@/services/product.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
+import { ImageOff } from 'lucide-react';
 import { SHIPPING_CATEGORY_OPTIONS } from '@/lib/dc-calculator';
 import { buildCategoryTree, flattenTree } from '@/lib/category-tree';
 import type { Product, Category } from '@/types';
@@ -16,6 +17,8 @@ import type { Product, Category } from '@/types';
 export default function EditProductForm({ product, categories }: { product: Product; categories: Category[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [removingImage, setRemovingImage] = useState(false);
+  const [currentImages, setCurrentImages] = useState<string[]>(product.images ?? []);
   const flatCats = flattenTree(buildCategoryTree(categories));
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -38,8 +41,38 @@ export default function EditProductForm({ product, categories }: { product: Prod
     <Card>
       <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {product.images?.[0] && (
-            <img src={product.images[0]} alt={product.name} className="h-32 w-32 rounded-lg object-cover" />
+          {/* Current image(s) with remove */}
+          {currentImages.length > 0 && (
+            <div className="space-y-2">
+              <Label>Current Image</Label>
+              <div className="flex flex-wrap gap-3">
+                {currentImages.map((imgUrl, idx) => (
+                  <div key={idx} className="relative group">
+                    <img src={imgUrl} alt={`${product.name} ${idx + 1}`} className="h-32 w-32 rounded-lg object-cover border" />
+                    <button
+                      type="button"
+                      disabled={removingImage}
+                      onClick={async () => {
+                        setRemovingImage(true);
+                        try {
+                          await removeProductImage(product.id, imgUrl);
+                          setCurrentImages((prev) => prev.filter((u) => u !== imgUrl));
+                          toast.success('Image removed');
+                        } catch (err: any) {
+                          toast.error(err.message);
+                        } finally {
+                          setRemovingImage(false);
+                        }
+                      }}
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600 disabled:opacity-50"
+                      title="Remove image"
+                    >
+                      <ImageOff className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -110,8 +143,11 @@ export default function EditProductForm({ product, categories }: { product: Prod
           </div>
 
           <div className="space-y-1">
-            <Label>Replace Image</Label>
+            <Label>{currentImages.length > 0 ? 'Replace Image' : 'Upload Image'}</Label>
             <Input name="image" type="file" accept="image/*" />
+            {currentImages.length > 0 && (
+              <p className="text-xs text-gray-400">Upload a new file to replace the current image, or hover to remove it above.</p>
+            )}
           </div>
 
           <div className="flex gap-4">

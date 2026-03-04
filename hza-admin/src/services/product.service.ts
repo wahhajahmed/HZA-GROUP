@@ -9,6 +9,7 @@ import {
   adminUpdateProduct,
   adminDeleteProduct,
   adminUploadProductImage,
+  adminRemoveProductImage,
 } from '@/repositories/product.repository';
 import type { Product } from '@/types';
 
@@ -79,4 +80,10 @@ export async function updateProduct(id: string, formData: FormData) {
 export async function deleteProduct(id: string) {
   await adminDeleteProduct(id);
   revalidatePath('/dashboard/products');
+}
+
+export async function removeProductImage(productId: string, imageUrl: string) {
+  await adminRemoveProductImage(productId, imageUrl);
+  revalidatePath('/dashboard/products');
+  revalidatePath(`/dashboard/products/${productId}`);
 }

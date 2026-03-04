@@ -62,3 +62,32 @@ export async function adminUploadProductImage(file: File): Promise<string> {
   const { data } = supabase.storage.from('product-images').getPublicUrl(path);
   return data.publicUrl;
 }
+
+export async function adminRemoveProductImage(productId: string, imageUrl: string): Promise<void> {
+  const supabase = await createClient();
+
+  // Extract storage path from public URL
+  // URL format: .../storage/v1/object/public/product-images/products/1234.jpg
+  const marker = '/product-images/';
+  const idx = imageUrl.indexOf(marker);
+  if (idx !== -1) {
+    const storagePath = imageUrl.substring(idx + marker.length);
+    await supabase.storage.from('product-images').remove([storagePath]);
+  }
+
+  // Remove the image URL from the images array in the database
+  // Fetch current images, filter out the removed one, update
+  const { data: product } = await supabase
+    .from('products')
+    .select('images')
+    .eq('id', productId)
+    .single();
+
+  const updatedImages = (product?.images ?? []).filter((img: string) => img !== imageUrl);
+
+  const { error } = await supabase
+    .from('products')
+    .update({ images: updatedImages, updated_at: new Date().toISOString() })
+    .eq('id', productId);
+  if (error) throw new Error(error.message);
+}

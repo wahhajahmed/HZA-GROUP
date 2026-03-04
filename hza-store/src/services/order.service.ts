@@ -35,17 +35,25 @@ export async function placeOrder(
     if (cartItems.length === 0)
       return { data: null, error: 'Your cart is empty' };
 
-    // Validate stock for each item
-    for (const item of cartItems) {
-      const prod = await product.findById(item.product_id);
-      if (!prod)
-        return { data: null, error: `Product "${item.product?.name}" not found` };
-      if (prod.stock < item.quantity)
-        return {
-          data: null,
-          error: `Only ${prod.stock} units of "${prod.name}" available`,
-        };
+    // Atomically validate & decrement stock for ALL items in one transaction
+    // This prevents race conditions where two users buy the last item simultaneously
+    const productIds = cartItems.map((item) => item.product_id);
+    const quantities = cartItems.map((item) => item.quantity);
+
+    const { error: stockError } = await supabase.rpc('validate_and_decrement_stock', {
+      p_product_ids: productIds,
+      p_quantities: quantities,
+    });
+
+    if (stockError) {
+      // The RPC raises descriptive exceptions for out-of-stock / insufficient stock
+      const msg = stockError.message || 'Stock validation failed';
+      return { data: null, error: msg };
     }
+
+    // Stock has been reserved — proceed with order creation.
+    // If anything below fails the stock is already decremented, but this is the
+    // safer side (prevents overselling). An admin can manually adjust if needed.
 
     // Calculate delivery charge using area_delivery_charges + scaling formula
     const { data: areaChargeData } = await supabase
@@ -136,14 +144,6 @@ export async function placeOrder(
 
     // Clear cart
     await cart.clearCart(user.id);
-
-    // Atomically decrement stock for each item (requires decrement_stock RPC — see supabase/patches.sql)
-    for (const item of cartItems) {
-      await supabase.rpc('decrement_stock', {
-        p_product_id: item.product_id,
-        p_quantity: item.quantity,
-      });
-    }
 
     // Notify admin cache that a new order exists
     revalidatePath('/admin/orders');

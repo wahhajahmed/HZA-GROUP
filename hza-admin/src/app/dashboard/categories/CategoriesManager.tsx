@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { createCategory, updateCategory, deleteCategory } from '@/services/category.service';
+import { createCategory, updateCategory, deleteCategory, removeCategoryImage } from '@/services/category.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Pencil, Trash2, X, Package, ChevronDown, ChevronRight, FolderTree } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Package, ChevronDown, ChevronRight, FolderTree, ImageOff } from 'lucide-react';
 import { slugify } from '@/lib/utils';
 import { SHIPPING_CATEGORY_OPTIONS, SHIPPING_CATEGORY_LABELS } from '@/lib/dc-calculator';
 import { buildCategoryTree, flattenTree, type CategoryNode } from '@/lib/category-tree';
@@ -28,6 +28,8 @@ interface FormPanelProps {
 
 function CategoryForm({ editing, parentId, parentName, allCategories, onClose, onSaved }: FormPanelProps) {
   const [loading, setLoading] = useState(false);
+  const [removingImage, setRemovingImage] = useState(false);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(editing?.image_url ?? null);
   const [name, setName] = useState(editing?.name ?? '');
   const [slug, setSlug] = useState(editing?.slug ?? '');
   const [defaultShippingCat, setDefaultShippingCat] = useState<Category['default_shipping_category']>(
@@ -157,9 +159,40 @@ function CategoryForm({ editing, parentId, parentName, allCategories, onClose, o
             <p className="text-xs text-gray-400">Default DC tier for new products in this category.</p>
           </div>
 
-          <div className="col-span-2 space-y-1">
+          <div className="col-span-2 space-y-2">
             <Label>Image</Label>
+            {editing && currentImageUrl && (
+              <div className="flex items-center gap-3 p-2 rounded-lg border border-gray-200 bg-gray-50">
+                <img src={currentImageUrl} alt="Current" className="h-16 w-16 rounded object-cover border" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-500 truncate">{currentImageUrl.split('/').pop()}</p>
+                  <button
+                    type="button"
+                    disabled={removingImage}
+                    onClick={async () => {
+                      setRemovingImage(true);
+                      try {
+                        await removeCategoryImage(editing.id, currentImageUrl);
+                        setCurrentImageUrl(null);
+                        toast.success('Image removed');
+                      } catch (err: any) {
+                        toast.error(err.message);
+                      } finally {
+                        setRemovingImage(false);
+                      }
+                    }}
+                    className="mt-1 inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-800 disabled:opacity-50"
+                  >
+                    <ImageOff className="h-3 w-3" />
+                    {removingImage ? 'Removing…' : 'Remove Image'}
+                  </button>
+                </div>
+              </div>
+            )}
             <Input name="image" type="file" accept="image/*" />
+            {editing && currentImageUrl && (
+              <p className="text-xs text-gray-400">Upload a new file to replace the current image, or remove it above.</p>
+            )}
           </div>
 
           <div className="col-span-2 flex items-center gap-2">

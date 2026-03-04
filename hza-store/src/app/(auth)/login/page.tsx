@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Suspense } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { signIn } from '@/services/auth.service';
 import { loginSchema, type LoginSchema } from '@/lib/validations/auth';
 import { Button } from '@/components/ui/button';
 import { BrandLogo } from '@/components/shared/BrandLogo';
@@ -31,28 +31,10 @@ function LoginForm() {
 
   const onSubmit = async (data: LoginSchema) => {
     try {
-      const supabase = createClient();
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
+      const { error } = await signIn(data);
 
       if (error) {
-        toast.error(error.message);
-        return;
-      }
-
-      // Check if user is blocked
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_blocked')
-        .eq('email', data.email)
-        .single();
-
-      if (profile?.is_blocked) {
-        await supabase.auth.signOut();
-        toast.error('Your account has been blocked. Please contact support.');
+        toast.error(error);
         return;
       }
 
@@ -61,6 +43,7 @@ function LoginForm() {
       // Redirect to next (default to home '/')
       const redirectUrl = next || '/';
       router.push(redirectUrl);
+      router.refresh();
     } catch (err) {
       toast.error((err as Error).message ?? 'Something went wrong. Please try again.');
     }

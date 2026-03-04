@@ -13,24 +13,77 @@ ALTER TYPE order_status ADD VALUE IF NOT EXISTS 'refunded';
 
 
 -- ─────────────────────────────────────────────
--- PATCH 2: Atomic stock decrement RPC
+-- PATCH 2: Atomic stock decrement RPC (IMPROVED)
 -- Used by order.service.ts when a customer places an order.
 -- Prevents race conditions (two customers buying last item simultaneously).
--- If stock is insufficient the update silently does nothing
--- (the stock validation in placeOrder() already blocks this case).
+-- Uses WHERE stock >= quantity to prevent negative stock.
+-- Raises exception if insufficient stock.
 -- ─────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.decrement_stock(
   p_product_id UUID,
   p_quantity    INTEGER
 )
-RETURNS void
+RETURNS INTEGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
+DECLARE
+  new_stock INTEGER;
 BEGIN
   UPDATE public.products
-  SET    stock = GREATEST(stock - p_quantity, 0)
-  WHERE  id    = p_product_id;
+  SET    stock = stock - p_quantity
+  WHERE  id    = p_product_id
+    AND  stock >= p_quantity
+  RETURNING stock INTO new_stock;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'INSUFFICIENT_STOCK: Product % has insufficient stock', p_product_id;
+  END IF;
+
+  RETURN new_stock;
+END;
+$$;
+
+-- Batch stock validation + decrement in a single transaction
+-- Accepts arrays of product IDs and quantities
+CREATE OR REPLACE FUNCTION public.validate_and_decrement_stock(
+  p_product_ids UUID[],
+  p_quantities  INTEGER[]
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  i INTEGER;
+  prod RECORD;
+BEGIN
+  IF array_length(p_product_ids, 1) != array_length(p_quantities, 1) THEN
+    RAISE EXCEPTION 'Arrays must have same length';
+  END IF;
+
+  FOR i IN 1..array_length(p_product_ids, 1) LOOP
+    -- Lock the row for update to prevent race conditions
+    SELECT id, name, stock INTO prod
+    FROM public.products
+    WHERE id = p_product_ids[i]
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Product not found: %', p_product_ids[i];
+    END IF;
+
+    IF prod.stock < p_quantities[i] THEN
+      RAISE EXCEPTION 'INSUFFICIENT_STOCK:You are trying to purchase "%", but only % units are available.',
+        prod.name, prod.stock;
+    END IF;
+
+    UPDATE public.products
+    SET stock = stock - p_quantities[i]
+    WHERE id = p_product_ids[i];
+  END LOOP;
+
+  RETURN TRUE;
 END;
 $$;
 

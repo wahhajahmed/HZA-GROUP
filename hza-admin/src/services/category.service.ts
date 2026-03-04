@@ -7,6 +7,7 @@ import {
   adminUpdateCategory,
   adminDeleteCategory,
   adminUploadCategoryImage,
+  adminRemoveCategoryImage,
 } from '@/repositories/category.repository';
 import type { Category } from '@/types';
 
@@ -66,5 +67,10 @@ export async function updateCategory(id: string, formData: FormData) {
 
 export async function deleteCategory(id: string) {
   await adminDeleteCategory(id);
+  revalidatePath('/dashboard/categories');
+}
+
+export async function removeCategoryImage(categoryId: string, imageUrl: string) {
+  await adminRemoveCategoryImage(categoryId, imageUrl);
   revalidatePath('/dashboard/categories');
 }

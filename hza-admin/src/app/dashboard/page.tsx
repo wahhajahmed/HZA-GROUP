@@ -41,7 +41,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-7xl mx-auto px-4">
+    <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
            Overview <span className="reveal-text">Performance</span>

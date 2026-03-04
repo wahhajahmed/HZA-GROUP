@@ -40,14 +40,6 @@ export function HeroProductSlider({ products, interval = 3500 }: Props) {
 
   if (len === 0) return null;
 
-  const fmt = (n: number) =>
-    new Intl.NumberFormat("en-PK", {
-      style: "currency",
-      currency: "PKR",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(n);
-
   return (
     <div
       className="relative w-full max-w-[500px] mx-auto select-none"

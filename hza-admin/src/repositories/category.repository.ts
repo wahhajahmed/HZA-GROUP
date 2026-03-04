@@ -51,3 +51,23 @@ export async function adminUploadCategoryImage(file: File): Promise<string> {
   const { data } = supabase.storage.from('category-images').getPublicUrl(path);
   return data.publicUrl;
 }
+
+export async function adminRemoveCategoryImage(categoryId: string, imageUrl: string): Promise<void> {
+  const supabase = await createClient();
+
+  // Extract storage path from public URL
+  // URL format: .../storage/v1/object/public/category-images/categories/1234.jpg
+  const marker = '/category-images/';
+  const idx = imageUrl.indexOf(marker);
+  if (idx !== -1) {
+    const storagePath = imageUrl.substring(idx + marker.length);
+    await supabase.storage.from('category-images').remove([storagePath]);
+  }
+
+  // Set image_url to null in the database
+  const { error } = await supabase
+    .from('categories')
+    .update({ image_url: null })
+    .eq('id', categoryId);
+  if (error) throw new Error(error.message);
+}

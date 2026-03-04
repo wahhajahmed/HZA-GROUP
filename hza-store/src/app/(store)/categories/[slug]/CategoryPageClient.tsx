@@ -202,58 +202,99 @@ export default function CategoryPageClient({
   );
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
-      {/* Breadcrumb */}
-      <nav className="flex flex-wrap items-center gap-1.5 text-sm text-gray-500 mb-6">
-        <Link href="/" className="hover:text-blue-600">Home</Link>
-        <ChevronRight className="h-3.5 w-3.5 flex-shrink-0" />
-        <Link href="/categories" className="hover:text-blue-600">Categories</Link>
-        {ancestors.slice(0, -1).map((anc) => (
-          <span key={anc.id} className="flex items-center gap-1.5">
-            <ChevronRight className="h-3.5 w-3.5 flex-shrink-0" />
-            <Link href={`/categories/${anc.slug}`} className="hover:text-blue-600">{anc.name}</Link>
-          </span>
-        ))}
-        <ChevronRight className="h-3.5 w-3.5 flex-shrink-0" />
-        <span className="text-gray-900 font-medium">{category.name}</span>
-        {filteredCategory && (
-          <>
-            <ChevronRight className="h-3.5 w-3.5 flex-shrink-0" />
-            <span className="text-gray-900 font-medium">{filteredCategory.name}</span>
-          </>
-        )}
-      </nav>
+    <div>
+      {/* Full-width category cover banner */}
+      {category.image_url && !filteredCategory && (
+        <div className="relative w-full -mt-24 overflow-hidden">
+          <Image
+            src={category.image_url}
+            alt={category.name}
+            width={1920}
+            height={600}
+            className="w-full h-auto object-contain"
+            sizes="100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-10">
+            <div className="container mx-auto max-w-7xl">
+              <h1 className="text-xl sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">{category.name}</h1>
+              {category.description && (
+                <p className="mt-1 sm:mt-2 text-white/80 text-xs sm:text-sm md:text-base max-w-2xl">{category.description}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Category header */}
-      <div className="mb-6">
-        {category.image_url && !filteredCategory && (
-          <div className="relative mb-4 h-40 rounded-2xl overflow-hidden">
-            <Image src={category.image_url} alt={category.name} fill className="object-cover" sizes="100vw" />
+      <div className="container mx-auto max-w-7xl px-4 py-8">
+        {/* Breadcrumb */}
+        <nav className="flex flex-wrap items-center gap-1.5 text-sm text-gray-500 mb-6">
+          <Link href="/" className="hover:text-blue-600">Home</Link>
+          <ChevronRight className="h-3.5 w-3.5 flex-shrink-0" />
+          <Link href="/categories" className="hover:text-blue-600">Categories</Link>
+          {ancestors.slice(0, -1).map((anc) => (
+            <span key={anc.id} className="flex items-center gap-1.5">
+              <ChevronRight className="h-3.5 w-3.5 flex-shrink-0" />
+              <Link href={`/categories/${anc.slug}`} className="hover:text-blue-600">{anc.name}</Link>
+            </span>
+          ))}
+          <ChevronRight className="h-3.5 w-3.5 flex-shrink-0" />
+          <span className="text-gray-900 font-medium">{category.name}</span>
+          {filteredCategory && (
+            <>
+              <ChevronRight className="h-3.5 w-3.5 flex-shrink-0" />
+              <span className="text-gray-900 font-medium">{filteredCategory.name}</span>
+            </>
+          )}
+        </nav>
+
+        {/* Category header (when no cover image or when sub-filter is active) */}
+        {(!category.image_url || filteredCategory) && (
+          <div className="mb-6">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{activeLabel}</h1>
+                {category.description && !filteredCategory && (
+                  <p className="mt-1 text-gray-500 text-sm">{category.description}</p>
+                )}
+              </div>
+              {filteredCategory && (
+                <button
+                  onClick={clearFilter}
+                  className="flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm text-blue-700 hover:bg-blue-100 transition-colors"
+                >
+                  {filteredCategory.name} <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         )}
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{activeLabel}</h1>
-            {category.description && !filteredCategory && (
-              <p className="mt-1 text-gray-500 text-sm">{category.description}</p>
-            )}
-            <p className="mt-1 text-sm text-gray-400">
+
+        {/* Product count + active filter chip when banner is showing */}
+        {category.image_url && !filteredCategory && (
+          <div className="mb-6 flex items-center justify-between">
+            <p className="text-sm text-gray-400">
               {initialTotal} product{initialTotal !== 1 ? 's' : ''}
             </p>
           </div>
-          {/* Active filter chip */}
-          {filteredCategory && (
-            <button
-              onClick={clearFilter}
-              className="flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm text-blue-700 hover:bg-blue-100 transition-colors"
-            >
-              {filteredCategory.name} <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
-      </div>
+        )}
+        {filteredCategory && (
+          <div className="mb-4">
+            <p className="text-sm text-gray-400">
+              {initialTotal} product{initialTotal !== 1 ? 's' : ''}
+            </p>
+          </div>
+        )}
+        {!category.image_url && !filteredCategory && (
+          <div className="mb-4">
+            <p className="text-sm text-gray-400">
+              {initialTotal} product{initialTotal !== 1 ? 's' : ''}
+            </p>
+          </div>
+        )}
 
-      <div className="flex gap-6">
+        <div className="flex gap-6">
         {/* Sidebar — desktop */}
         {children.length > 0 && (
           <aside className="hidden md:block w-56 flex-shrink-0">
@@ -341,6 +382,7 @@ export default function CategoryPageClient({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

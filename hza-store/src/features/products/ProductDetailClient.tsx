@@ -8,7 +8,6 @@ import {
   ShoppingCart,
   ChevronRight,
   CheckCircle,
-  Truck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Product } from '@/types';
@@ -185,12 +184,6 @@ export function ProductDetailClient({ product }: Props) {
               <p>{product.description}</p>
             </div>
           )}
-
-          {/* Delivery */}
-          <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700">
-            <Truck className="h-4 w-4 flex-shrink-0" />
-            <span>Free delivery on orders above PKR 2,000 (varies by city)</span>
-          </div>
 
           {/* Add to cart */}
           <div className="flex flex-col gap-3">

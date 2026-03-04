@@ -72,7 +72,9 @@ export default function CartPage() {
     );
   }
 
-  return (
+    const hasOutOfStock = items.some((item) => (item.product?.stock ?? 0) === 0);
+
+    return (
     <div className="container mx-auto max-w-6xl px-4 py-10">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold text-gray-900">
@@ -96,18 +98,19 @@ export default function CartPage() {
               product.discount_price
             );
             const loading = loadingId === item.product_id;
+            const isOutOfStock = product.stock === 0;
 
             return (
               <div
                 key={item.id}
-                className="flex gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+                className={`flex gap-4 rounded-xl border bg-white p-4 shadow-sm ${isOutOfStock ? 'border-red-300 bg-red-50/50' : 'border-gray-200'}`}
               >
                 {/* Image */}
                 <Link
                   href={`/products/${product.slug}`}
                   className="flex-shrink-0"
                 >
-                  <div className="relative h-20 w-20 rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
+                  <div className={`relative h-20 w-20 rounded-lg overflow-hidden border bg-gray-50 ${isOutOfStock ? 'opacity-50 border-red-200' : 'border-gray-100'}`}>
                     <Image
                       src={getProductImage(product.images)}
                       alt={product.name}
@@ -150,7 +153,7 @@ export default function CartPage() {
                             item.quantity - 1
                           )
                         }
-                        disabled={loading || item.quantity <= 1}
+                        disabled={loading || item.quantity <= 1 || isOutOfStock}
                         aria-label="Decrease quantity"
                         className="flex h-8 w-8 items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors"
                       >
@@ -166,16 +169,22 @@ export default function CartPage() {
                             item.quantity + 1
                           )
                         }
-                        disabled={loading || item.quantity >= product.stock}
+                        disabled={loading || item.quantity >= product.stock || isOutOfStock}
                         aria-label="Increase quantity"
                         className="flex h-8 w-8 items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors"
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>
                     </div>
-                    <span className="text-xs text-gray-400">
-                      {product.stock} available
-                    </span>
+                    {isOutOfStock ? (
+                      <span className="text-xs font-medium text-red-600">
+                        Out of stock — remove to continue
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400">
+                        {product.stock} available
+                      </span>
+                    )}
                   </div>
 
                   <p className="text-sm font-semibold text-blue-600">
@@ -233,10 +242,11 @@ export default function CartPage() {
             <Button
               className="w-full"
               size="lg"
+              disabled={hasOutOfStock}
               onClick={() => router.push('/checkout')}
             >
-              Proceed to Checkout
-              <ArrowRight className="h-4 w-4" />
+              {hasOutOfStock ? 'Remove out-of-stock items first' : 'Proceed to Checkout'}
+              {!hasOutOfStock && <ArrowRight className="h-4 w-4" />}
             </Button>
 
             <Link
@@ -254,10 +264,11 @@ export default function CartPage() {
         <Button
           className="w-full"
           size="lg"
+          disabled={hasOutOfStock}
           onClick={() => router.push('/checkout')}
         >
-          Checkout — {formatCurrency(subtotal())}
-          <ArrowRight className="h-4 w-4" />
+          {hasOutOfStock ? 'Remove out-of-stock items' : `Checkout — ${formatCurrency(subtotal())}`}
+          {!hasOutOfStock && <ArrowRight className="h-4 w-4" />}
         </Button>
       </div>
     </div>
