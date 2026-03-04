@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { createProduct } from '@/services/product.service';
@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { slugify } from '@/lib/utils';
 import { SHIPPING_CATEGORY_OPTIONS } from '@/lib/dc-calculator';
 import { buildCategoryTree, flattenTree } from '@/lib/category-tree';
+import { Plus, ImageOff } from 'lucide-react';
 import type { Category } from '@/types';
 
 export default function NewProductForm({ categories }: { categories: Category[] }) {
@@ -19,12 +20,33 @@ export default function NewProductForm({ categories }: { categories: Category[] 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleFilesChange(fileList: FileList | null) {
+    if (!fileList) return;
+    const newFiles = Array.from(fileList);
+    setFiles((prev) => [...prev, ...newFiles]);
+    const newPreviews = newFiles.map((f) => URL.createObjectURL(f));
+    setPreviews((prev) => [...prev, ...newPreviews]);
+  }
+
+  function removeFile(idx: number) {
+    setFiles((prev) => prev.filter((_, i) => i !== idx));
+    setPreviews((prev) => { URL.revokeObjectURL(prev[idx]); return prev.filter((_, i) => i !== idx); });
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     try {
       const formData = new FormData(e.currentTarget);
+      // Remove default file input entries, add our managed files
+      formData.delete('images');
+      for (const file of files) {
+        formData.append('images', file);
+      }
       await createProduct(formData);
       toast.success('Product created!');
       router.push('/dashboard/products');
@@ -108,9 +130,46 @@ export default function NewProductForm({ categories }: { categories: Category[] 
             </p>
           </div>
 
-          <div className="space-y-1">
-            <Label>Product Image</Label>
-            <Input name="image" type="file" accept="image/*" />
+          <div className="space-y-2">
+            <Label>Product Images</Label>
+            {previews.length > 0 && (
+              <div className="flex flex-wrap gap-3">
+                {previews.map((src, idx) => (
+                  <div key={idx} className="relative group">
+                    <img src={src} alt={`Preview ${idx + 1}`} className="h-28 w-28 rounded-lg object-cover border" />
+                    <button
+                      type="button"
+                      onClick={() => removeFile(idx)}
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600"
+                      title="Remove"
+                    >
+                      <ImageOff className="h-3 w-3" />
+                    </button>
+                    {idx === 0 && (
+                      <span className="absolute bottom-1 left-1 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">Main</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              title="Upload product images"
+              onChange={(e) => handleFilesChange(e.target.files)}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors w-full justify-center"
+            >
+              <Plus className="h-4 w-4" />
+              {files.length > 0 ? 'Add More Images' : 'Select Images'}
+            </button>
+            <p className="text-xs text-gray-400">Upload multiple images. First image will be the main thumbnail.</p>
           </div>
 
           <div className="flex gap-4">

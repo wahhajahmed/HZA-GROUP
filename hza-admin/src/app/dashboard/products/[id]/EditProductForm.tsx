@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { updateProduct, removeProductImage } from '@/services/product.service';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { ImageOff } from 'lucide-react';
+import { ImageOff, Plus, ImageIcon } from 'lucide-react';
 import { SHIPPING_CATEGORY_OPTIONS } from '@/lib/dc-calculator';
 import { buildCategoryTree, flattenTree } from '@/lib/category-tree';
 import type { Product, Category } from '@/types';
@@ -17,15 +17,36 @@ import type { Product, Category } from '@/types';
 export default function EditProductForm({ product, categories }: { product: Product; categories: Category[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [removingImage, setRemovingImage] = useState(false);
+  const [removingImage, setRemovingImage] = useState<string | null>(null);
   const [currentImages, setCurrentImages] = useState<string[]>(product.images ?? []);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const flatCats = flattenTree(buildCategoryTree(categories));
+
+  function handleFilesChange(files: FileList | null) {
+    if (!files) return;
+    const fileArr = Array.from(files);
+    setNewFiles((prev) => [...prev, ...fileArr]);
+    const newPreviews = fileArr.map((f) => URL.createObjectURL(f));
+    setPreviews((prev) => [...prev, ...newPreviews]);
+  }
+
+  function removeNewFile(idx: number) {
+    setNewFiles((prev) => prev.filter((_, i) => i !== idx));
+    setPreviews((prev) => { URL.revokeObjectURL(prev[idx]); return prev.filter((_, i) => i !== idx); });
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     try {
       const formData = new FormData(e.currentTarget);
+      // Remove default file input, add our multiple files
+      formData.delete('images');
+      for (const file of newFiles) {
+        formData.append('images', file);
+      }
       await updateProduct(product.id, formData);
       toast.success('Product updated!');
       router.push('/dashboard/products');
@@ -44,16 +65,16 @@ export default function EditProductForm({ product, categories }: { product: Prod
           {/* Current image(s) with remove */}
           {currentImages.length > 0 && (
             <div className="space-y-2">
-              <Label>Current Image</Label>
+              <Label>Current Images ({currentImages.length})</Label>
               <div className="flex flex-wrap gap-3">
                 {currentImages.map((imgUrl, idx) => (
                   <div key={idx} className="relative group">
-                    <img src={imgUrl} alt={`${product.name} ${idx + 1}`} className="h-32 w-32 rounded-lg object-cover border" />
+                    <img src={imgUrl} alt={`${product.name} ${idx + 1}`} className="h-28 w-28 rounded-lg object-cover border" />
                     <button
                       type="button"
-                      disabled={removingImage}
+                      disabled={removingImage === imgUrl}
                       onClick={async () => {
-                        setRemovingImage(true);
+                        setRemovingImage(imgUrl);
                         try {
                           await removeProductImage(product.id, imgUrl);
                           setCurrentImages((prev) => prev.filter((u) => u !== imgUrl));
@@ -61,11 +82,36 @@ export default function EditProductForm({ product, categories }: { product: Prod
                         } catch (err: any) {
                           toast.error(err.message);
                         } finally {
-                          setRemovingImage(false);
+                          setRemovingImage(null);
                         }
                       }}
                       className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600 disabled:opacity-50"
                       title="Remove image"
+                    >
+                      <ImageOff className="h-3 w-3" />
+                    </button>
+                    {idx === 0 && (
+                      <span className="absolute bottom-1 left-1 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">Main</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* New images to upload */}
+          {previews.length > 0 && (
+            <div className="space-y-2">
+              <Label>New Images to Upload ({previews.length})</Label>
+              <div className="flex flex-wrap gap-3">
+                {previews.map((src, idx) => (
+                  <div key={idx} className="relative group">
+                    <img src={src} alt={`New ${idx + 1}`} className="h-28 w-28 rounded-lg object-cover border border-blue-300" />
+                    <button
+                      type="button"
+                      onClick={() => removeNewFile(idx)}
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600"
+                      title="Remove"
                     >
                       <ImageOff className="h-3 w-3" />
                     </button>
@@ -143,11 +189,25 @@ export default function EditProductForm({ product, categories }: { product: Prod
           </div>
 
           <div className="space-y-1">
-            <Label>{currentImages.length > 0 ? 'Replace Image' : 'Upload Image'}</Label>
-            <Input name="image" type="file" accept="image/*" />
-            {currentImages.length > 0 && (
-              <p className="text-xs text-gray-400">Upload a new file to replace the current image, or hover to remove it above.</p>
-            )}
+            <Label>Add Images</Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              title="Upload product images"
+              onChange={(e) => handleFilesChange(e.target.files)}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors w-full justify-center"
+            >
+              <Plus className="h-4 w-4" />
+              Add More Images
+            </button>
+            <p className="text-xs text-gray-400">You can upload multiple images. First image is the main thumbnail.</p>
           </div>
 
           <div className="flex gap-4">

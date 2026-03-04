@@ -171,6 +171,29 @@ export async function getUserOrders(limit?: number): Promise<ApiResponse<Order[]
   }
 }
 
+/** Get delivered but unreviewed orders for review reminder popup */
+export async function getUnreviewedDeliveredOrders(): Promise<ApiResponse<Order[]>> {
+  try {
+    const { supabase } = await getRepos();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Not authenticated' };
+
+    const { data, error } = await supabase
+      .from('orders')
+      .select('id, order_number, status, reviewed, customer_name, total, created_at, updated_at')
+      .eq('user_id', user.id)
+      .eq('status', 'delivered')
+      .or('reviewed.is.null,reviewed.eq.false')
+      .order('updated_at', { ascending: false })
+      .limit(3);
+
+    if (error) return { data: null, error: error.message };
+    return { data: (data as Order[]) ?? [], error: null };
+  } catch (err) {
+    return { data: null, error: (err as Error).message };
+  }
+}
+
 export async function getOrderById(id: string): Promise<ApiResponse<Order>> {
   try {
     const { order, supabase } = await getRepos();

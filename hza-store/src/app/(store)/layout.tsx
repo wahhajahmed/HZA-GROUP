@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import PromotionWrapper from '@/components/shared/PromotionWrapper';
+import { ReviewReminderPopup } from '@/components/shared/ReviewReminderPopup';
 
 export default function StoreLayout({
   children,
@@ -17,6 +18,8 @@ export default function StoreLayout({
       <Suspense fallback={null}>
         <PromotionWrapper />
       </Suspense>
+      {/* Review reminder popup for delivered but unreviewed orders */}
+      <ReviewReminderPopup />
     </div>
   );
 }

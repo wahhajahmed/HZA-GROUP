@@ -20,6 +20,28 @@ export async function getVisibleReviews(): Promise<ApiResponse<Review[]>> {
   }
 }
 
+/** Get visible reviews for a specific product */
+export async function getProductReviews(productId: string): Promise<ApiResponse<Review[]>> {
+  try {
+    const { repo } = await getRepo();
+    const data = await repo.findByProductId(productId);
+    return { data, error: null };
+  } catch (err) {
+    return { data: null, error: (err as Error).message };
+  }
+}
+
+/** Get rating summary (avg, count, distribution) for a product */
+export async function getProductRatingSummary(productId: string): Promise<ApiResponse<{ avg: number; count: number; distribution: Record<number, number> }>> {
+  try {
+    const { repo } = await getRepo();
+    const data = await repo.getProductRatingSummary(productId);
+    return { data, error: null };
+  } catch (err) {
+    return { data: null, error: (err as Error).message };
+  }
+}
+
 /** Submit a review for a delivered order */
 export async function submitReview(input: {
   orderId: string;
@@ -44,6 +66,14 @@ export async function submitReview(input: {
     if (order.status !== 'delivered') return { data: null, error: 'You can only review delivered orders.' };
     if (order.reviewed) return { data: null, error: 'You have already reviewed this order.' };
 
+    // Get the first product_id from order items for association
+    const { data: orderItems } = await supabase
+      .from('order_items')
+      .select('product_id')
+      .eq('order_id', input.orderId)
+      .limit(1);
+    const productId = orderItems?.[0]?.product_id ?? null;
+
     // Get profile name
     const { data: profile } = await supabase
       .from('profiles')
@@ -54,6 +84,7 @@ export async function submitReview(input: {
     const review = await repo.create({
       user_id: user.id,
       order_id: input.orderId,
+      product_id: productId,
       rating: input.rating,
       comment: input.comment,
       reviewer_name: profile?.full_name ?? order.customer_name ?? 'Customer',

@@ -167,6 +167,12 @@ async function TestimonialsSection() {
 
   const allReviews = dbReviews.length > 0 ? dbReviews : fallbackReviews;
 
+  // Calculate dynamic rating stats
+  const totalReviews = allReviews.length;
+  const avgRating = totalReviews > 0
+    ? (allReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1)
+    : '0.0';
+
   return (
     <section className="relative bg-slate-950 py-24 overflow-hidden">
       {/* Decorative Blur */}
@@ -189,11 +195,11 @@ async function TestimonialsSection() {
             </div>
             <div className="flex items-center gap-8 border-t border-slate-800 pt-8">
               <div className="flex flex-col">
-                <span className="text-2xl font-black text-white italic">4.9/7</span>
+                <span className="text-2xl font-black text-white italic">{avgRating}/5</span>
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Global Rating</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-2xl font-black text-white italic">10k+</span>
+                <span className="text-2xl font-black text-white italic">{totalReviews}+</span>
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Happy Clients</span>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getProductBySlug } from '@/services/product.service';
+import { getProductReviews, getProductRatingSummary } from '@/services/review.service';
 import { ProductDetailClient } from '@/features/products/ProductDetailClient';
 import { SITE_NAME } from '@/lib/constants';
 
@@ -24,7 +25,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: product.description ?? '',
       images: product.images.length > 0 ? [product.images[0]] : [],
     },
-    // Product structured data (JSON-LD injected in client component)
   };
 }
 
@@ -34,5 +34,17 @@ export default async function ProductPage({ params }: Props) {
 
   if (!product) notFound();
 
-  return <ProductDetailClient product={product} />;
+  // Fetch reviews and rating summary in parallel
+  const [reviewsResult, summaryResult] = await Promise.all([
+    getProductReviews(product.id),
+    getProductRatingSummary(product.id),
+  ]);
+
+  return (
+    <ProductDetailClient
+      product={product}
+      reviews={reviewsResult.data ?? []}
+      ratingSummary={summaryResult.data ?? { avg: 0, count: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } }}
+    />
+  );
 }

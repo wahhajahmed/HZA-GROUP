@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Package, MapPin, Truck, CheckCircle, Clock, XCircle, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Package, MapPin, Truck, CheckCircle, Clock, XCircle, RefreshCw, Star } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getOrderById } from '@/services/order.service'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
@@ -282,6 +282,21 @@ export default async function OrderDetailPage({ params }: Props) {
           <Button asChild className="w-full">
             <Link href="/">Continue Shopping</Link>
           </Button>
+
+          {/* Write Review button for delivered & unreviewed orders */}
+          {order.status === 'delivered' && !order.reviewed && (
+            <Button asChild variant="outline" className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50">
+              <Link href={`/review?token=${order.id}`}>
+                <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-2" />
+                Write a Review
+              </Link>
+            </Button>
+          )}
+          {order.reviewed && (
+            <p className="text-center text-sm text-green-600 flex items-center justify-center gap-1">
+              <CheckCircle className="h-4 w-4" /> Review submitted
+            </p>
+          )}
         </div>
       </div>
     </div>

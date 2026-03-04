@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Package, ChevronRight, ShoppingBag } from 'lucide-react'
+import { Package, ChevronRight, ShoppingBag, Star } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getUserOrders } from '@/services/order.service'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -108,6 +108,19 @@ export default async function OrdersPage() {
                   </div>
                 </div>
               </Link>
+
+              {/* Write Review button for delivered & unreviewed orders */}
+              {order.status === 'delivered' && !order.reviewed && (
+                <div className="px-6 pb-4 -mt-1">
+                  <Link
+                    href={`/review?token=${order.id}`}
+                    className="inline-flex items-center gap-2 text-sm font-medium text-yellow-600 bg-yellow-50 hover:bg-yellow-100 px-4 py-2 rounded-lg transition-colors border border-yellow-200"
+                  >
+                    <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                    Write a Review
+                  </Link>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

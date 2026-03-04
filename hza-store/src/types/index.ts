@@ -137,8 +137,17 @@ export interface OrderItem {
   product?: Product | null;
 }
 
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface Review {
   id: string;
+  product_id: string | null;
   user_id: string | null;
   order_id: string | null;
   rating: number;

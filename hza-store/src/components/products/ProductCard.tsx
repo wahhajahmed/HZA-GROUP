@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ShoppingCart, CheckCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import type { Product } from '@/types';
 import { formatCurrency, getEffectivePrice, getDiscountPercent, getProductImage } from '@/lib/utils';
@@ -23,6 +23,40 @@ export function ProductCard({ product }: ProductCardProps) {
   const { user } = useAuthStore();
   const { items, addItem } = useCartStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [activeImg, setActiveImg] = useState(0);
+  const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const images = product.images.length > 0 ? product.images : [getProductImage(product.images)];
+  const hasMultiple = images.length > 1;
+
+  /* Sync slider position via DOM ref */
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.style.transform = `translateX(-${activeImg * 100}%)`;
+    el.style.transitionDuration = '300ms';
+  }, [activeImg]);
+
+  const startAutoPlay = useCallback(() => {
+    if (!hasMultiple) return;
+    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    autoPlayRef.current = setInterval(() => {
+      setActiveImg((prev) => (prev + 1) % images.length);
+    }, 1200);
+  }, [hasMultiple, images.length]);
+
+  const stopAutoPlay = useCallback(() => {
+    if (autoPlayRef.current) {
+      clearInterval(autoPlayRef.current);
+      autoPlayRef.current = null;
+    }
+    setActiveImg(0);
+  }, []);
+
+  useEffect(() => {
+    return () => { if (autoPlayRef.current) clearInterval(autoPlayRef.current); };
+  }, []);
 
   const effectivePrice = getEffectivePrice(product.price, product.discount_price);
   const discountPercent = getDiscountPercent(product.price, product.discount_price);
@@ -68,34 +102,63 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link href={`/products/${product.slug}`} className="group block">
       <div className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-        {/* Image */}
-        <div className="relative aspect-square overflow-hidden bg-gray-100">
-          <Image
-            src={getProductImage(product.images)}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          />
+        {/* Image — Auto-slides on hover */}
+        <div
+          className="relative aspect-square overflow-hidden bg-gray-100"
+          onMouseEnter={startAutoPlay}
+          onMouseLeave={stopAutoPlay}
+        >
+          <div
+            ref={trackRef}
+            className="flex h-full transition-transform duration-300 ease-out"
+          >
+            {images.map((img, idx) => (
+              <div key={idx} className="relative flex-shrink-0 w-full h-full">
+                <Image
+                  src={img}
+                  alt={`${product.name} ${idx + 1}`}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  draggable={false}
+                />
+              </div>
+            ))}
+          </div>
           {discountPercent > 0 && (
             <Badge
               variant="destructive"
-              className="absolute top-2 left-2 text-[10px]"
+              className="absolute top-2 left-2 text-[10px] z-10"
             >
               -{discountPercent}%
             </Badge>
           )}
           {isOutOfStock && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
               <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-700">
                 Out of Stock
               </span>
             </div>
           )}
           {product.is_featured && !isOutOfStock && (
-            <Badge className="absolute top-2 right-2 text-[10px]">
+            <Badge className="absolute top-2 right-2 text-[10px] z-10">
               Featured
             </Badge>
+          )}
+          {/* Dot indicators */}
+          {hasMultiple && (
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex gap-1">
+              {images.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`h-1.5 rounded-full transition-all ${
+                    activeImg === idx
+                      ? 'w-4 bg-white'
+                      : 'w-1.5 bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
           )}
         </div>
 
