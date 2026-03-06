@@ -33,6 +33,17 @@ export function Navbar() {
   const { setItems } = useCartStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
   // Keyboard navigation for user menu
   useEffect(() => {
     if (!userMenuOpen) return;
@@ -68,12 +79,12 @@ export function Navbar() {
       scrolled ? "pt-2" : "pt-4"
     )}>
       <div className={cn(
-        "container mx-auto flex h-16 max-w-7xl items-center justify-between px-6 rounded-2xl transition-all duration-300",
+        "container mx-auto flex h-16 max-w-7xl items-center justify-between px-6 rounded-2xl transition-all duration-300 overflow-hidden",
         scrolled ? "glass shadow-xl h-14" : "bg-white border border-slate-100 shadow-premium"
       )}>
         {/* Logo */}
         <Link href="/" className="flex items-center group transition-transform hover:scale-105">
-           <div className="relative h-10 w-28 md:w-32">
+           <div className={cn("relative w-36 md:w-32 transition-all duration-300", scrolled ? "h-10" : "h-12")}>
              <Image
                 src="/images/hza-logo.jpeg"
                 alt="HZA Group"
@@ -210,8 +221,11 @@ export function Navbar() {
 
       {/* Mobile Menu Overhaul */}
       {menuOpen && (
-        <div className="lg:hidden absolute top-full left-0 right-0 px-4 pt-2 animate-fade-in" role="dialog" aria-modal="true" aria-label="Mobile menu">
-          <div className="glass rounded-3xl p-6 shadow-2xl">
+        <>
+          {/* Full-screen backdrop to hide background content */}
+          <div className="fixed inset-0 bg-white/95 backdrop-blur-md z-40 lg:hidden" onClick={() => setMenuOpen(false)} />
+          <div className="lg:hidden absolute top-full left-0 right-0 px-4 pt-2 animate-fade-in z-50" role="dialog" aria-modal="true" aria-label="Mobile menu">
+            <div className="bg-white rounded-3xl p-6 shadow-2xl border border-slate-100">
             <nav className="flex flex-col gap-2" aria-label="Mobile navigation">
               <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2 px-2">Navigation</p>
               {NAV_LINKS.map((link) => (
@@ -263,6 +277,7 @@ export function Navbar() {
             </nav>
           </div>
         </div>
+        </>
       )}
     </header>
   );

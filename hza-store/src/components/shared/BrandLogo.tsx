@@ -13,7 +13,7 @@ interface BrandLogoProps {
 }
 
 /** CSS height class per size token */
-const HEIGHT_CLS = { sm: 'h-7', md: 'h-9', lg: 'h-12' } as const;
+const HEIGHT_CLS = { sm: 'h-8', md: 'h-11', lg: 'h-14' } as const;
 
 /**
  * BrandLogo — reusable HZA logo component for the storefront.
@@ -41,7 +41,7 @@ export function BrandLogo({
       src="/images/hza-logo.jpeg"
       alt="HZA Group"
       width={300}
-      height={120}
+      height={200}
       priority
       draggable={false}
       className={cn(

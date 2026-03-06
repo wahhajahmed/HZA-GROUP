@@ -371,8 +371,23 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
 
           {/* Description */}
           {product.description && (
-            <div className="prose prose-sm text-gray-600 max-w-none">
-              <p>{product.description}</p>
+            <div className="prose prose-sm text-gray-600 max-w-none whitespace-pre-line">
+              {product.description.split('\n').map((line, i) => {
+                const trimmed = line.trim();
+                // Skip blank lines (they become spacing via whitespace-pre-line)
+                if (!trimmed) return <br key={i} />;
+                // Detect bullet-like prefixes: •, -, *, ✅, ✔️, 🔥, etc.
+                const isBullet = /^[\-\*•●◆▸▹➤✅✔🔥⭐💡🎯📌🟢🔵⚡]/.test(trimmed);
+                if (isBullet) {
+                  return (
+                    <p key={i} className="flex items-start gap-2 my-0.5">
+                      <span className="shrink-0">{trimmed.charAt(0)}</span>
+                      <span>{trimmed.slice(1).trim()}</span>
+                    </p>
+                  );
+                }
+                return <p key={i} className="my-1">{line}</p>;
+              })}
             </div>
           )}
 

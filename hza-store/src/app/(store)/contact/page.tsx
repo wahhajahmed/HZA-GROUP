@@ -46,14 +46,12 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-white to-white pb-16 pt-24 md:pt-28">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-white pb-16">
       {/* Hero Section */}
-      <section className="w-full bg-white/80 border-b border-slate-100 py-12 md:py-16 mb-10">
+      <section className="w-full bg-white/80 border-b border-slate-100 py-6 md:py-8 mb-8">
         <div className="container max-w-3xl mx-auto px-4 flex flex-col items-center text-center">
-          <div className="mb-6">
-            <Mail className="h-12 w-12 text-primary mx-auto mb-2" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-slate-900">Contact Us</h1>
+          <Mail className="h-10 w-10 text-primary mx-auto mb-3" />
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-2 text-slate-900">Contact Us</h1>
           <p className="text-lg text-slate-600 max-w-xl mx-auto">Have a question or need help? We&apos;d love to hear from you.</p>
         </div>
       </section>

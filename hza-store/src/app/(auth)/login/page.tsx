@@ -13,6 +13,10 @@ import { BrandLogo } from '@/components/shared/BrandLogo';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/store/auth.store';
+import { useCartStore } from '@/store/cart.store';
+import type { Profile } from '@/types';
 
 function LoginForm() {
   const router = useRouter();
@@ -39,6 +43,28 @@ function LoginForm() {
       }
 
       toast.success('Welcome back!');
+
+      // Fetch the authenticated user's profile and hydrate stores immediately
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        if (profile) {
+          useAuthStore.getState().setUser(profile as Profile);
+        }
+        // Reload cart for the authenticated user
+        const { data: cartItems } = await supabase
+          .from('cart_items')
+          .select('*')
+          .eq('user_id', session.user.id);
+        if (cartItems) {
+          useCartStore.getState().setItems(cartItems);
+        }
+      }
 
       // Redirect to next (default to home '/')
       const redirectUrl = next || '/';
