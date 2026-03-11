@@ -3,14 +3,28 @@ import { persist } from 'zustand/middleware';
 import type { CartItem } from '@/types';
 import { getEffectivePrice } from '@/lib/utils';
 
+/** Match a cart item by its composite key: product + variant selection */
+function matchItem(
+  item: CartItem,
+  productId: string,
+  selectedColor?: string | null,
+  selectedSize?: string | null,
+) {
+  return (
+    item.product_id === productId &&
+    (item.selected_color ?? null) === (selectedColor ?? null) &&
+    (item.selected_size  ?? null) === (selectedSize  ?? null)
+  );
+}
+
 interface CartStore {
   items: CartItem[];
   isLoading: boolean;
   // Actions
   setItems: (items: CartItem[]) => void;
   addItem: (item: CartItem) => void;
-  updateItem: (productId: string, quantity: number) => void;
-  removeItem: (productId: string) => void;
+  updateItem: (productId: string, quantity: number, selectedColor?: string | null, selectedSize?: string | null) => void;
+  removeItem: (productId: string, selectedColor?: string | null, selectedSize?: string | null) => void;
   clearItems: () => void;
   setLoading: (loading: boolean) => void;
   // Computed
@@ -28,23 +42,27 @@ export const useCartStore = create<CartStore>()(
 
       addItem: (item) =>
         set((state) => {
-          const exists = state.items.find(
-            (i) => i.product_id === item.product_id
+          const exists = state.items.find((i) =>
+            matchItem(i, item.product_id, item.selected_color, item.selected_size)
           );
           if (exists) return state;
           return { items: [...state.items, item] };
         }),
 
-      updateItem: (productId, quantity) =>
+      updateItem: (productId, quantity, selectedColor, selectedSize) =>
         set((state) => ({
           items: state.items.map((item) =>
-            item.product_id === productId ? { ...item, quantity } : item
+            matchItem(item, productId, selectedColor, selectedSize)
+              ? { ...item, quantity }
+              : item
           ),
         })),
 
-      removeItem: (productId) =>
+      removeItem: (productId, selectedColor, selectedSize) =>
         set((state) => ({
-          items: state.items.filter((item) => item.product_id !== productId),
+          items: state.items.filter(
+            (item) => !matchItem(item, productId, selectedColor, selectedSize)
+          ),
         })),
 
       clearItems: () => set({ items: [] }),
@@ -65,7 +83,6 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: 'hza-cart',
-      // Only persist a minimal snapshot for UI speed
       partialize: (state) => ({ items: state.items }),
     }
   )

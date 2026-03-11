@@ -22,28 +22,28 @@ export default function CartPage() {
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const handleQuantityChange = async (
-    productId: string,
+    item: { id: string; product_id: string; quantity: number; selected_color?: string | null; selected_size?: string | null },
     quantity: number
   ) => {
     if (quantity < 1) return;
-    setLoadingId(productId);
-    const { error } = await updateCartItemQuantity(productId, quantity);
+    setLoadingId(item.id);
+    const { error } = await updateCartItemQuantity(item.product_id, quantity, item.selected_color, item.selected_size);
     setLoadingId(null);
     if (error) {
       toast.error(error);
     } else {
-      updateItem(productId, quantity);
+      updateItem(item.product_id, quantity, item.selected_color, item.selected_size);
     }
   };
 
-  const handleRemove = async (productId: string) => {
-    setLoadingId(productId);
-    const { error } = await removeFromCart(productId);
+  const handleRemove = async (item: { id: string; product_id: string; selected_color?: string | null; selected_size?: string | null }) => {
+    setLoadingId(item.id);
+    const { error } = await removeFromCart(item.product_id, item.selected_color, item.selected_size);
     setLoadingId(null);
     if (error) {
       toast.error(error);
     } else {
-      removeItem(productId);
+      removeItem(item.product_id, item.selected_color, item.selected_size);
       toast.success('Item removed from cart');
     }
   };
@@ -97,7 +97,7 @@ export default function CartPage() {
               product.price,
               product.discount_price
             );
-            const loading = loadingId === item.product_id;
+            const loading = loadingId === item.id;
             const isOutOfStock = product.stock === 0;
 
             return (
@@ -131,7 +131,7 @@ export default function CartPage() {
                       {product.name}
                     </Link>
                     <button
-                      onClick={() => handleRemove(item.product_id)}
+                      onClick={() => handleRemove(item)}
                       disabled={loading}
                       className="p-1 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
                       aria-label="Remove item"
@@ -144,12 +144,28 @@ export default function CartPage() {
                     {formatCurrency(price)}
                   </p>
 
+                  {/* Variant badges */}
+                  {(item.selected_color || item.selected_size) && (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {item.selected_color && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                          Color: {item.selected_color}
+                        </span>
+                      )}
+                      {item.selected_size && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                          Size: {item.selected_size}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-3">
                     <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden">
                       <button
                         onClick={() =>
                           handleQuantityChange(
-                            item.product_id,
+                            item,
                             item.quantity - 1
                           )
                         }
@@ -165,7 +181,7 @@ export default function CartPage() {
                       <button
                         onClick={() =>
                           handleQuantityChange(
-                            item.product_id,
+                            item,
                             item.quantity + 1
                           )
                         }

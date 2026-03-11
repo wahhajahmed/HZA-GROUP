@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import type { ApiResponse, Profile } from '@/types';
 import type { SignupSchema, LoginSchema } from '@/lib/validations/auth';
 import { SITE_URL } from '@/lib/constants';
+import { normalizePakistaniPhone } from '@/lib/utils';
 
 const BASE_SITE = SITE_URL.replace(/\/$/, '');
 
@@ -14,13 +15,18 @@ export async function signUp(
   try {
     const supabase = await createClient();
 
+    const normalizedPhone = normalizePakistaniPhone(input.phone);
+    if (!normalizedPhone) {
+      return { data: null, error: 'Invalid Pakistani mobile number.' };
+    }
+
     const { error } = await supabase.auth.signUp({
       email: input.email,
       password: input.password,
       options: {
         data: {
           full_name: input.full_name,
-          phone: input.phone,
+          phone: normalizedPhone,
         },
         emailRedirectTo: `${BASE_SITE}/auth/callback?next=${encodeURIComponent('/login?verified=true')}`,
       },

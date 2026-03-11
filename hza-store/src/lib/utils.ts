@@ -31,6 +31,19 @@ export function formatDate(dateStr: string): string {
   }).format(new Date(dateStr));
 }
 
+// ── Pakistani phone number helpers ────────────────────────────────
+/** Accepts +923XXXXXXXXX  923XXXXXXXXX  03XXXXXXXXX */
+export const PK_PHONE_REGEX = /^(?:\+92|92|0)3[0-9]{9}$/;
+
+/** Normalise any valid Pakistani mobile format → 03XXXXXXXXX. Returns null if invalid. */
+export function normalizePakistaniPhone(raw: string): string | null {
+  const cleaned = raw.replace(/[\s\-()]/g, '');
+  if (!PK_PHONE_REGEX.test(cleaned)) return null;
+  if (cleaned.startsWith('+92')) return '0' + cleaned.slice(3);
+  if (cleaned.startsWith('92'))  return '0' + cleaned.slice(2);
+  return cleaned;
+}
+
 /**
  * Format date with time
  */

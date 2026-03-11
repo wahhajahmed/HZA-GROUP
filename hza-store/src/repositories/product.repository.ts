@@ -19,13 +19,27 @@ export class ProductRepository {
   async findBySlug(slug: string): Promise<Product | null> {
     const { data, error } = await this.supabase
       .from('products')
-      .select('*, category:categories(*)')
+      .select(`
+        *,
+        category:categories(*),
+        product_variants(
+          id, product_id, color_name, color_hex, sort_order, created_at,
+          variant_images(id, variant_id, image_url, sort_order, created_at)
+        ),
+        product_sizes(id, product_id, size, sort_order)
+      `)
       .eq('slug', slug)
       .eq('is_active', true)
       .single();
 
     if (error) return null;
-    return data as Product;
+    // Normalise field aliases so the rest of the app can use .variants / .sizes
+    const raw = data as any;
+    return {
+      ...raw,
+      variants: raw.product_variants ?? [],
+      sizes: raw.product_sizes ?? [],
+    } as Product;
   }
 
   async findFeatured(limit = 8): Promise<Product[]> {

@@ -43,6 +43,33 @@ export interface Category {
   children?: Category[];
 }
 
+export interface VariantImage {
+  id: string;
+  variant_id: string;
+  image_url: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  color_name: string;
+  color_hex: string;
+  sort_order: number;
+  created_at: string;
+  // Joined
+  images?: VariantImage[];
+  variant_images?: VariantImage[];
+}
+
+export interface ProductSize {
+  id: string;
+  product_id: string;
+  size: string;
+  sort_order: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -57,12 +84,19 @@ export interface Product {
   category_id: string | null;
   shipping_category: ShippingCategory;
   images: string[];
+  has_colors: boolean;
+  has_sizes: boolean;
   meta_title: string | null;
   meta_description: string | null;
   created_at: string;
   updated_at: string;
   // Joined
   category?: Category | null;
+  // Variant joins
+  variants?: ProductVariant[];
+  product_variants?: ProductVariant[];
+  sizes?: ProductSize[];
+  product_sizes?: ProductSize[];
 }
 
 export interface CartItem {
@@ -70,6 +104,9 @@ export interface CartItem {
   user_id: string;
   product_id: string;
   quantity: number;
+  selected_color: string | null;
+  selected_size: string | null;
+  selected_image: string | null;
   created_at: string;
   updated_at: string;
   // Joined
@@ -132,6 +169,8 @@ export interface OrderItem {
   price: number;
   quantity: number;
   subtotal: number;
+  selected_color: string | null;
+  selected_size: string | null;
   created_at: string;
   // Joined
   product?: Product | null;

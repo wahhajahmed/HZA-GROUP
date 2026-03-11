@@ -235,14 +235,21 @@ export default function CheckoutPage() {
                     <div className="space-y-2">
                       <Label htmlFor="phone">
                         <Phone className="h-4 w-4 inline mr-1" />
-                        Phone Number *
+                        Phone Number (Pakistan) *
                       </Label>
                       <Input
                         id="phone"
-                        placeholder="03XX-XXXXXXX"
+                        type="tel"
+                        placeholder="03XXXXXXXXX"
+                        inputMode="numeric"
+                        maxLength={13}
+                        autoComplete="tel"
                         {...register('phone')}
                         error={errors.phone?.message}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Accepted: 03001234567 · +923001234567 · 923001234567
+                      </p>
                     </div>
                   </div>
 

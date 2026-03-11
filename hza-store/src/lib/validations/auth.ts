@@ -1,4 +1,13 @@
 import { z } from 'zod';
+import { PK_PHONE_REGEX } from '@/lib/utils';
+
+const pkPhoneField = z
+  .string()
+  .min(1, 'Phone number is required')
+  .regex(
+    PK_PHONE_REGEX,
+    'Please enter a valid Pakistani mobile number (e.g. 03001234567)',
+  );
 
 export const signupSchema = z
   .object({
@@ -7,11 +16,7 @@ export const signupSchema = z
       .min(2, 'Full name must be at least 2 characters')
       .max(100, 'Full name must be less than 100 characters'),
     email: z.string().email('Please enter a valid email address'),
-    phone: z
-      .string()
-      .min(10, 'Phone number must be at least 10 digits')
-      .max(15, 'Phone number must be less than 15 digits')
-      .regex(/^[0-9+\-\s()]+$/, 'Please enter a valid phone number'),
+    phone: pkPhoneField,
     password: z
       .string()
       .min(8, 'Password must be at least 8 characters')

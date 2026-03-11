@@ -17,11 +17,18 @@ export async function adminGetOrderById(id: string): Promise<Order | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('orders')
-    .select('*, order_items(id, product_name, product_image, price, quantity, subtotal)')
+    .select(`
+      *,
+      order_items(
+        id, product_name, product_image, price, quantity, subtotal,
+        selected_color, selected_size,
+        product:products(id, variants:product_variants(color_name, color_hex))
+      )
+    `)
     .eq('id', id)
     .single();
   if (error) return null;
-  return data;
+  return data as Order;
 }
 
 export async function adminUpdateOrderStatus(id: string, status: string): Promise<void> {

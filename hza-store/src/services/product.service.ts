@@ -126,6 +126,8 @@ export async function adminCreateProduct(
       meta_description: input.meta_description ?? null,
       description: input.description ?? null,
       shipping_category: (input as any).shipping_category ?? 'small_parcel',
+      has_colors: (input as any).has_colors ?? false,
+      has_sizes: (input as any).has_sizes ?? false,
     });
 
     // Purge Next.js cache so storefront reflects new product immediately

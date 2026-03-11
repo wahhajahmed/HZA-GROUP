@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PK_PHONE_REGEX } from '@/lib/utils';
 
 export const checkoutSchema = z.object({
   name: z
@@ -7,9 +8,11 @@ export const checkoutSchema = z.object({
     .max(100, 'Name is too long'),
   phone: z
     .string()
-    .min(10, 'Phone number must be at least 10 digits')
-    .max(15, 'Phone number is too long')
-    .regex(/^[0-9+\-\s()]+$/, 'Please enter a valid phone number'),
+    .min(1, 'Phone number is required')
+    .regex(
+      PK_PHONE_REGEX,
+      'Please enter a valid Pakistani mobile number (e.g. 03001234567)',
+    ),
   address: z
     .string()
     .min(10, 'Address must be at least 10 characters')

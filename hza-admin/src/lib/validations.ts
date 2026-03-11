@@ -1,4 +1,15 @@
 import { z } from 'zod';
+import { PK_PHONE_REGEX } from '@/lib/utils';
+
+export const pkPhoneField = z
+  .string()
+  .regex(
+    PK_PHONE_REGEX,
+    'Please enter a valid Pakistani mobile number (e.g. 03001234567)',
+  )
+  .or(z.literal('').transform(() => null))
+  .nullable()
+  .optional();
 
 export const productSchema = z.object({
   name: z.string().min(2, 'Name is required'),

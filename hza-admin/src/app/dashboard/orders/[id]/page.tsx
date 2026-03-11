@@ -50,7 +50,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </Card>
       </div>
 
-      {/* Items */}
+          {/* Items */}
       <Card>
         <CardHeader><CardTitle className="text-base">Items ({order.order_items?.length ?? 0})</CardTitle></CardHeader>
         <CardContent>
@@ -61,9 +61,33 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   {item.product_image && (
                     <img src={item.product_image} alt={item.product_name} className="h-12 w-12 rounded-lg object-cover" />
                   )}
-                  <div>
+                  <div className="space-y-1">
                     <p className="font-medium">{item.product_name}</p>
                     <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                    {/* Color / Size badges */}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {item.selected_color && (() => {
+                        const hex = (item.product?.variants ?? []).find(
+                          (v: any) => v.color_name === item.selected_color,
+                        )?.color_hex;
+                        const cls = hex && /^#[0-9a-fA-F]{3,8}$/.test(hex)
+                          ? 'c' + hex.replace(/[^a-z0-9]/gi, '') : null;
+                        return (
+                          <>
+                            {cls && <style>{`.${cls}{background-color:${hex}}`}</style>}
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-white border border-gray-200">
+                              {cls && <span className={`${cls} h-3 w-3 rounded-full border border-gray-300 inline-block`} />}
+                              {item.selected_color}
+                            </span>
+                          </>
+                        );
+                      })()}
+                      {item.selected_size && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                          Size: {item.selected_size}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>

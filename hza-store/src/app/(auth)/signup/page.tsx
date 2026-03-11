@@ -75,15 +75,20 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="phone">Phone Number</Label>
+            <Label htmlFor="phone">Phone Number (Pakistan)</Label>
             <Input
               id="phone"
               type="tel"
-              placeholder="03001234567"
+              placeholder="03XXXXXXXXX"
               autoComplete="tel"
+              maxLength={13}
+              inputMode="numeric"
               error={errors.phone?.message}
               {...register('phone')}
             />
+            <p className="text-xs text-muted-foreground">
+              Accepted: 03001234567 · +923001234567 · 923001234567
+            </p>
           </div>
 
           <div className="space-y-1.5">

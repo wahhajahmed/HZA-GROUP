@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -12,7 +12,7 @@ import {
   Star,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Product, Review } from '@/types';
+import type { Product, Review, ProductVariant } from '@/types';
 import {
   formatCurrency,
   getEffectivePrice,
@@ -36,6 +36,13 @@ interface Props {
   ratingSummary?: RatingSummary;
 }
 
+interface GalleryImage {
+  url: string;
+  colorName: string;
+  colorHex: string;
+  variantIdx: number;
+}
+
 /* Map dynamic percentage to a static Tailwind width class (nearest 5%) */
 const WIDTH_MAP: Record<number, string> = {
   0:'w-0',5:'w-[5%]',10:'w-[10%]',15:'w-[15%]',20:'w-1/5',25:'w-1/4',
@@ -48,12 +55,57 @@ function pctWidthClass(pct: number) {
   return WIDTH_MAP[r] || 'w-0';
 }
 
+const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+
 export function ProductDetailClient({ product, reviews = [], ratingSummary }: Props) {
   const router = useRouter();
   const { user } = useAuthStore();
   const { items, addItem } = useCartStore();
-  const [selectedImage, setSelectedImage] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+
+  // â”€â”€ Variant state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const sortedVariants: ProductVariant[] = (
+    (product.variants ?? product.product_variants ?? []) as ProductVariant[]
+  ).slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
+  const hasColors = product.has_colors && sortedVariants.length > 0;
+  const hasSizes = product.has_sizes;
+
+  // Build flat gallery from variants when color-enabled
+  const colorGallery: GalleryImage[] = hasColors
+    ? sortedVariants.flatMap((v, vIdx) => {
+        const imgs = ((v.images ?? v.variant_images ?? []) as Array<{ image_url: string; sort_order?: number }>)
+          .slice()
+          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+        return imgs.map((img) => ({
+          url: img.image_url,
+          colorName: v.color_name,
+          colorHex: v.color_hex,
+          variantIdx: vIdx,
+        }));
+      })
+    : [];
+
+  // First image index per variant for jump-to-color
+  const variantStartIdx: number[] = sortedVariants.map((v, vIdx) =>
+    colorGallery.findIndex((g) => g.variantIdx === vIdx)
+  );
+
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  // Gallery images: color variants or regular images
+  const images: string[] = hasColors
+    ? colorGallery.map((g) => g.url)
+    : product.images.length > 0
+    ? product.images
+    : ['/images/product-placeholder.png'];
+
+  const [selectedImage, setSelectedImage] = useState(0);
+
+  // Derive selectedColor from current slider position
+  const selectedColor: string | null = hasColors && colorGallery.length > 0
+    ? (colorGallery[selectedImage]?.colorName ?? sortedVariants[0]?.color_name ?? null)
+    : null;
 
   /* Touch / swipe state */
   const touchStartX = useRef(0);
@@ -64,7 +116,7 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
   const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const savedImageRef = useRef(0);
 
-  /* Sync slider transform via DOM ref (avoids inline style attribute) */
+  /* Sync slider transform via DOM ref */
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -72,53 +124,60 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
     el.style.transitionDuration = dragOffset !== 0 ? '0ms' : '300ms';
   }, [selectedImage, dragOffset]);
 
-  const images = product.images.length > 0 ? product.images : ['/images/product-placeholder.png'];
+  /* When slider moves to a new image, update selectedColor */
+  // (no effect needed — selectedColor is derived from selectedImage + colorGallery)
 
-  const goTo = useCallback((idx: number) => {
+  const goTo = (idx: number) => {
     setSelectedImage(Math.max(0, Math.min(images.length - 1, idx)));
-  }, [images.length]);
+  };
+
+  const jumpToColor = (vIdx: number) => {
+    const startIdx = variantStartIdx[vIdx];
+    if (startIdx >= 0) {
+      goTo(startIdx);
+    }
+  };
 
   /* Auto-slide on hover */
-  const startAutoPlay = useCallback(() => {
+  const startAutoPlay = () => {
     if (images.length <= 1) return;
     savedImageRef.current = selectedImage;
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
     autoPlayRef.current = setInterval(() => {
       setSelectedImage((prev) => (prev + 1) % images.length);
     }, 1200);
-  }, [images.length, selectedImage]);
+  };
 
-  const stopAutoPlay = useCallback(() => {
+  const stopAutoPlay = () => {
     if (autoPlayRef.current) {
       clearInterval(autoPlayRef.current);
       autoPlayRef.current = null;
     }
     setSelectedImage(savedImageRef.current);
-  }, []);
+  };
 
-  /* Cleanup interval on unmount */
   useEffect(() => {
     return () => {
       if (autoPlayRef.current) clearInterval(autoPlayRef.current);
     };
   }, []);
 
-  const handleTouchStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
     isDragging.current = true;
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     touchStartX.current = clientX;
     touchEndX.current = clientX;
     setDragOffset(0);
-  }, []);
+  };
 
-  const handleTouchMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+  const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging.current) return;
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     touchEndX.current = clientX;
     setDragOffset(clientX - touchStartX.current);
-  }, []);
+  };
 
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = () => {
     if (!isDragging.current) return;
     isDragging.current = false;
     const diff = touchEndX.current - touchStartX.current;
@@ -129,13 +188,22 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
       goTo(selectedImage - 1);
     }
     setDragOffset(0);
-  }, [goTo, selectedImage]);
+  };
 
-  const cartItem = items.find((i) => i.product_id === product.id);
+  // â”€â”€ Cart state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const cartItem = items.find((i) => {
+    if (i.product_id !== product.id) return false;
+    if (hasColors && i.selected_color !== selectedColor) return false;
+    if (hasSizes && i.selected_size !== selectedSize) return false;
+    return true;
+  });
   const isInCart = !!cartItem;
+
   const effectivePrice = getEffectivePrice(product.price, product.discount_price);
   const discountPercent = getDiscountPercent(product.price, product.discount_price);
   const isOutOfStock = product.stock === 0;
+
+  const currentImageUrl = images[selectedImage] ?? images[0] ?? null;
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -149,8 +217,18 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
       return;
     }
 
+    if (hasSizes && !selectedSize) {
+      toast.error('Please select a size before adding to cart');
+      return;
+    }
+
     setIsLoading(true);
-    const { data, error } = await addToCart(product.id);
+    const { data, error } = await addToCart(
+      product.id,
+      hasColors ? selectedColor : null,
+      hasSizes ? selectedSize : null,
+      currentImageUrl,
+    );
     setIsLoading(false);
 
     if (error) {
@@ -168,6 +246,12 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
       toast.success('Added to cart!');
     }
   };
+
+  // Product sizes sorted
+  const productSizes = ((product.sizes ?? product.product_sizes ?? []) as Array<{ size: string; sort_order?: number }>)
+    .slice()
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+  const displaySizes = productSizes.length > 0 ? productSizes.map((s) => s.size) : SIZES;
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-10">
@@ -190,7 +274,7 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
       </nav>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        {/* Images — Swipeable Slider */}
+        {/* Images â€” Swipeable Slider */}
         <div className="space-y-3">
           <div
             className="relative aspect-square rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 select-none cursor-grab active:cursor-grabbing"
@@ -203,14 +287,12 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onMouseDown={(e) => {
-              // Pause auto-slide while dragging
               if (autoPlayRef.current) { clearInterval(autoPlayRef.current); autoPlayRef.current = null; }
               handleTouchStart(e);
             }}
             onMouseMove={handleTouchMove}
             onMouseUp={() => {
               handleTouchEnd();
-              // Resume auto-slide after drag
               savedImageRef.current = selectedImage;
               startAutoPlay();
             }}
@@ -285,8 +367,35 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
             )}
           </div>
 
-          {/* Thumbnails */}
-          {images.length > 1 && (
+          {/* Color swatches (jump-to-color) */}
+          {hasColors && sortedVariants.length > 1 && (
+            <div className="flex flex-wrap gap-2">
+              <style>{sortedVariants.filter(v => v.color_hex).map(v => {
+                const cls = 'c' + v.color_hex!.replace(/[^a-z0-9]/gi, '');
+                const safeHex = /^#[0-9a-fA-F]{3,8}$/.test(v.color_hex!) ? v.color_hex : 'transparent';
+                return `.${cls}{background-color:${safeHex}}`;
+              }).join('')}</style>
+              {sortedVariants.map((v, vIdx) => {
+                const cls = 'c' + (v.color_hex ?? '').replace(/[^a-z0-9]/gi, '');
+                return (
+                  <button
+                    key={v.id}
+                    onClick={() => jumpToColor(vIdx)}
+                    title={v.color_name}
+                    aria-label={`Select color ${v.color_name}`}
+                    className={`${cls} relative h-8 w-8 rounded-full border-2 transition-all focus:outline-none ${
+                      selectedColor === v.color_name
+                        ? 'border-blue-500 scale-110 shadow-md'
+                        : 'border-gray-300 hover:border-gray-500'
+                    }`}
+                  />
+                );
+              })}
+            </div>
+          )}
+
+          {/* Thumbnails (non-color products) */}
+          {!hasColors && images.length > 1 && (
             <div className="flex gap-2 overflow-x-auto">
               {images.map((img, idx) => (
                 <button
@@ -369,15 +478,74 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
             <Badge variant="success" className="w-fit">In Stock</Badge>
           )}
 
+          {/* Color selector (displayed in detail panel too when single variant exists) */}
+          {hasColors && (
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-gray-700">
+                Color: <span className="font-normal text-gray-600">{selectedColor}</span>
+              </p>
+              {sortedVariants.length > 1 && (
+                <div className="flex flex-wrap gap-2">
+                  <style>{sortedVariants.filter(v => v.color_hex).map(v => {
+                    const cls = 'c' + v.color_hex!.replace(/[^a-z0-9]/gi, '');
+                    const safeHex = /^#[0-9a-fA-F]{3,8}$/.test(v.color_hex!) ? v.color_hex : 'transparent';
+                    return `.${cls}{background-color:${safeHex}}`;
+                  }).join('')}</style>
+                  {sortedVariants.map((v, vIdx) => {
+                    const cls = 'c' + (v.color_hex ?? '').replace(/[^a-z0-9]/gi, '');
+                    return (
+                      <button
+                        key={v.id}
+                        onClick={() => jumpToColor(vIdx)}
+                        title={v.color_name}
+                        aria-label={`Select color ${v.color_name}`}
+                        className={`${cls} relative h-8 w-8 rounded-full border-2 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 ${
+                          selectedColor === v.color_name
+                            ? 'border-blue-500 scale-110 shadow-md'
+                            : 'border-gray-300 hover:border-gray-500'
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Size selector */}
+          {hasSizes && (
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-gray-700">
+                Size:{' '}
+                {selectedSize
+                  ? <span className="font-normal text-gray-600">{selectedSize}</span>
+                  : <span className="font-normal text-red-500">Please select a size</span>}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {displaySizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`min-w-[3rem] px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 ${
+                      selectedSize === size
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Description */}
           {product.description && (
             <div className="prose prose-sm text-gray-600 max-w-none whitespace-pre-line">
               {product.description.split('\n').map((line, i) => {
                 const trimmed = line.trim();
-                // Skip blank lines (they become spacing via whitespace-pre-line)
                 if (!trimmed) return <br key={i} />;
-                // Detect bullet-like prefixes: •, -, *, ✅, ✔️, 🔥, etc.
-                const isBullet = /^[\-\*•●◆▸▹➤✅✔🔥⭐💡🎯📌🟢🔵⚡]/.test(trimmed);
+                const isBullet = /^[\-\*â€¢â—â—†â–¸â–¹âž¤âœ…âœ”ðŸ”¥â­ðŸ’¡ðŸŽ¯ðŸ“ŒðŸŸ¢ðŸ”µâš¡]/.test(trimmed);
                 if (isBullet) {
                   return (
                     <p key={i} className="flex items-start gap-2 my-0.5">
@@ -396,7 +564,7 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
             <Button
               size="lg"
               className="w-full"
-              disabled={isOutOfStock}
+              disabled={isOutOfStock || (hasSizes && !selectedSize)}
               isLoading={isLoading}
               onClick={handleAddToCart}
             >
@@ -412,6 +580,12 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
                 </>
               )}
             </Button>
+
+            {hasSizes && !selectedSize && !isOutOfStock && (
+              <p className="text-xs text-center text-red-500">
+                Please select a size to add to cart
+              </p>
+            )}
 
             {isInCart && (
               <Button
@@ -536,14 +710,16 @@ export function ProductDetailClient({ product, reviews = [], ratingSummary }: Pr
           <Button
             size="lg"
             className="w-full"
+            disabled={hasSizes && !selectedSize}
             isLoading={isLoading}
             onClick={handleAddToCart}
           >
             <ShoppingCart className="h-5 w-5" />
-            Add to Cart — {formatCurrency(effectivePrice)}
+            {hasSizes && !selectedSize ? 'Select a Size' : `Add to Cart â€” ${formatCurrency(effectivePrice)}`}
           </Button>
         </div>
       )}
     </div>
   );
 }
+

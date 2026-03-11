@@ -31,7 +31,10 @@ export async function getCart(): Promise<ApiResponse<CartItem[]>> {
 }
 
 export async function addToCart(
-  productId: string
+  productId: string,
+  selectedColor?: string | null,
+  selectedSize?: string | null,
+  selectedImage?: string | null,
 ): Promise<ApiResponse<CartItem>> {
   try {
     const { cart, product, supabase } = await getRepos();
@@ -46,11 +49,16 @@ export async function addToCart(
     if (!prod) return { data: null, error: 'Product not found' };
     if (prod.stock === 0) return { data: null, error: 'Product is out of stock' };
 
-    // Check if already in cart
-    const existing = await cart.findItem(user.id, productId);
+    // Validate: if product has sizes, a size must be selected
+    if (prod.has_sizes && !selectedSize) {
+      return { data: null, error: 'Please select a size before adding to cart' };
+    }
+
+    // Check if already in cart (exact variant match)
+    const existing = await cart.findItem(user.id, productId, selectedColor, selectedSize);
     if (existing) return { data: null, error: 'Item already in your cart' };
 
-    const item = await cart.addItem(user.id, productId);
+    const item = await cart.addItem(user.id, productId, 1, selectedColor, selectedSize, selectedImage);
     return { data: item, error: null };
   } catch (err) {
     return { data: null, error: (err as Error).message };
@@ -59,7 +67,9 @@ export async function addToCart(
 
 export async function updateCartItemQuantity(
   productId: string,
-  quantity: number
+  quantity: number,
+  selectedColor?: string | null,
+  selectedSize?: string | null,
 ): Promise<ApiResponse<CartItem>> {
   try {
     const { cart, product, supabase } = await getRepos();
@@ -80,7 +90,7 @@ export async function updateCartItemQuantity(
         error: `Only ${prod.stock} items available in stock`,
       };
 
-    const item = await cart.updateQuantity(user.id, productId, quantity);
+    const item = await cart.updateQuantity(user.id, productId, quantity, selectedColor, selectedSize);
     return { data: item, error: null };
   } catch (err) {
     return { data: null, error: (err as Error).message };
@@ -88,7 +98,9 @@ export async function updateCartItemQuantity(
 }
 
 export async function removeFromCart(
-  productId: string
+  productId: string,
+  selectedColor?: string | null,
+  selectedSize?: string | null,
 ): Promise<ApiResponse<null>> {
   try {
     const { cart, supabase } = await getRepos();
@@ -98,7 +110,7 @@ export async function removeFromCart(
 
     if (!user) return { data: null, error: 'Not authenticated' };
 
-    await cart.removeItem(user.id, productId);
+    await cart.removeItem(user.id, productId, selectedColor, selectedSize);
     return { data: null, error: null };
   } catch (err) {
     return { data: null, error: (err as Error).message };

@@ -6,7 +6,7 @@ import { OrderRepository } from '@/repositories/order.repository';
 import { CartRepository } from '@/repositories/cart.repository';
 import { ProductRepository } from '@/repositories/product.repository';
 import type { ApiResponse, Order, OrderStatus, CheckoutInput } from '@/types';
-import { getEffectivePrice } from '@/lib/utils';
+import { getEffectivePrice, normalizePakistaniPhone } from '@/lib/utils';
 import { calculateDeliveryCharge, getEffectiveShippingCategory, type ShippingCategory } from '@/lib/dc-calculator';
 
 async function getRepos() {
@@ -109,7 +109,7 @@ export async function placeOrder(
       user_id: user.id,
       status: 'pending',
       customer_name: input.name,
-      customer_phone: input.phone,
+      customer_phone: normalizePakistaniPhone(input.phone) ?? input.phone,
       customer_email: profile?.email ?? user.email ?? '',
       address: input.address,
       city: input.city,
@@ -129,7 +129,7 @@ export async function placeOrder(
       order_id: newOrder.id,
       product_id: item.product_id,
       product_name: item.product!.name,
-      product_image: item.product!.images[0] ?? null,
+      product_image: item.selected_image ?? item.product!.images[0] ?? null,
       price: getEffectivePrice(
         item.product!.price,
         item.product!.discount_price
@@ -138,6 +138,8 @@ export async function placeOrder(
       subtotal:
         getEffectivePrice(item.product!.price, item.product!.discount_price) *
         item.quantity,
+      selected_color: item.selected_color ?? null,
+      selected_size: item.selected_size ?? null,
     }));
 
     await order.createOrderItems(orderItems);
