@@ -12,9 +12,18 @@ export const metadata: Metadata = {
   description:
     'Your one-stop online store for quality products. Shop the latest collections with fast delivery across Pakistan.',
   keywords: ['online store', 'shopping', 'Pakistan', 'ecommerce'],
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/images/hza-group-logo.png', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/images/hza-group-logo.png',
+  },
   openGraph: {
     type: 'website',
     siteName: process.env.NEXT_PUBLIC_SITE_NAME ?? 'HZA Group',
+    images: [{ url: '/images/hza-group-logo.png', width: 512, height: 512 }],
   },
 };
 
